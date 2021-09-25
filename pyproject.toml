@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "snakepack"
+version = "0.1.0"
+description = ""
+authors = ["Jochen Van de Velde <mail@jochenvandevelde.be>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.0.0"
+pytest-xdist = "^2.3.0"
+pytest-sugar = "^0.9.4"
+pytest-cov = "^2.12.1"
+pytest-randomly = "^3.10.1"
+pytest-mock = "^3.6.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+python_classes = '*Test'
