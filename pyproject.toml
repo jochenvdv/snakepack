@@ -8,6 +8,7 @@ authors = ["Jochen Van de Velde <mail@jochenvandevelde.be>"]
 python = "^3.9"
 libcst = "^0.3.21"
 boltons = "^21.0.0"
+modulegraph2 = "^2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"

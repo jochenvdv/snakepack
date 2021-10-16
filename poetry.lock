@@ -99,12 +99,35 @@ typing-inspect = ">=0.4.0"
 dev = ["black (==20.8b1)", "coverage (>=4.5.4)", "fixit (==0.1.1)", "flake8 (>=3.7.8)", "hypothesis (>=4.36.0)", "hypothesmith (>=0.0.4)", "jupyter (>=1.0.0)", "nbsphinx (>=0.4.2)", "prompt-toolkit (>=2.0.9)", "pyre-check (==0.9.3)", "setuptools-scm (>=6.0.1)", "sphinx-rtd-theme (>=0.4.3)", "tox (>=3.18.1)", "ufmt (==1.2)", "usort (==0.6.3)"]
 
 [[package]]
+name = "modulegraph2"
+version = "2.2"
+description = "A module import dependency graph for Python projects."
+category = "main"
+optional = false
+python-versions = ">=3.6,<4"
+
+[package.dependencies]
+objectgraph = "*"
+typing_extensions = "*"
+
+[[package]]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "objectgraph"
+version = "1.0.3"
+description = "A basic graph library"
+category = "main"
+optional = false
+python-versions = ">=3.6,<4"
+
+[package.dependencies]
+typing_extensions = "*"
 
 [[package]]
 name = "packaging"
@@ -318,7 +341,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d86494abf6e8e09c2237cae394e0ee05b3081e5df68986cb6aaa8b6ee30fc717"
+content-hash = "971507b48a76406615d5f343299539969611f61feb3318fda972268b7bfc6564"
 
 [metadata.files]
 atomicwrites = [
@@ -407,9 +430,17 @@ libcst = [
     {file = "libcst-0.3.21-py3-none-any.whl", hash = "sha256:a9c6fea4fa3bf92f87e40c6850dec099aaa7aaf963a934c763844544b32d3a1e"},
     {file = "libcst-0.3.21.tar.gz", hash = "sha256:4302a8f09cd9e5ab5962f8e126d032bba98541893dd38cce6b4770969fed059d"},
 ]
+modulegraph2 = [
+    {file = "modulegraph2-2.2-py3-none-any.whl", hash = "sha256:4fdf90ebb35109c232e925158a29be9910b9d8e2fa4bd57863fdccb0afaa18f1"},
+    {file = "modulegraph2-2.2.tar.gz", hash = "sha256:6452aa294e3a1fb4d0d6faca2ef0879e2fa2c23a135a5a202d08db3518d44fcc"},
+]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
+]
+objectgraph = [
+    {file = "objectgraph-1.0.3-py3-none-any.whl", hash = "sha256:a19bbec5ce193f3e80dfb06529d4dbce80c5165d3b3b55afb344fe0567ee8cd4"},
+    {file = "objectgraph-1.0.3.tar.gz", hash = "sha256:4f214c1d72c1dd1c2122b1d7b3348169834e99bb88aab0a4e1de2bfd01316451"},
 ]
 packaging = [
     {file = "packaging-21.0-py3-none-any.whl", hash = "sha256:c86254f9220d55e31cc94d69bade760f0847da8000def4dfe1c6b872fd14ff14"},
