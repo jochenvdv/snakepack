@@ -6,6 +6,8 @@ authors = ["Jochen Van de Velde <mail@jochenvandevelde.be>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+libcst = "^0.3.21"
+boltons = "^21.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"
