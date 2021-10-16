@@ -1,3 +1,4 @@
 from snakepack.bundlers._base import (
-    Bundle
+    Bundle,
+    Bundler
 )
