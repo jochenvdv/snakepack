@@ -25,7 +25,8 @@ class FileBundlerTest:
         asset2.name = 'asset2'
 
         assets = [asset1, asset2]
-        bundle = Bundle(name='test', bundler=bundler, assets=assets)
+        bundle = mocker.MagicMock(spec=Bundle)
+        bundle.assets = assets
 
         bundler.bundle(bundle)
 
