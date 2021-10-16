@@ -63,6 +63,24 @@ class StringAssetContent(AssetContent[U]):
         return self._string
 
 
+class AssetContentSource(ABC):
+    @abstractmethod
+    def load(self) -> StringAssetContent:
+        raise NotImplementedError
 
 
+class RuntimeContentSource(AssetContentSource):
+    def __init__(self, content: AssetContent):
+        self._content = content
 
+    def load(self) -> StringAssetContent:
+        return self._content.to_string()
+
+
+class FileContentSource(AssetContentSource):
+    def __init__(self, path):
+        self._path = path
+
+    def load(self) -> StringAssetContent:
+        with open(self._path) as f:
+            return StringAssetContent(f.read())

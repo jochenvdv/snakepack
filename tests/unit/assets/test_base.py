@@ -4,6 +4,7 @@ from snakepack.assets import (
     AssetContent,
     StringAssetContent, AssetGroup
 )
+from snakepack.assets._base import AssetContentSource, FileContentSource
 
 
 class AssetTypeTest:
@@ -76,3 +77,43 @@ class AssetGroupTest:
 
     def test_init(self):
         group = self.TestAssetGroup(assets=[])
+
+
+class AssetContentSourceTest:
+    class TestAssetContentSource(AssetContentSource):
+        def load(self) -> StringAssetContent:
+            return StringAssetContent('test')
+
+    def test_init(self):
+        source = self.TestAssetContentSource()
+
+
+class RuntimeContentSource(AssetContentSource):
+    def test_init(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        source = RuntimeContentSource(content=content)
+
+    def test_load(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        string_content = mocker.MagicMock(spec=StringAssetContent)
+        content.to_string.return_value = string_content
+
+        source = RuntimeContentSource(content=content)
+        loaded_content = source.load()
+
+        assert loaded_content is string_content
+        content.to_string.assert_called_once()
+
+
+class FileContentSourceTest:
+    def test_init(self):
+        source = FileContentSource(path='test.py')
+
+    def test_load(self, fs):
+        fs.create_file('test.py', contents='test=True')
+
+        source = FileContentSource(path='test.py')
+        content = source.load()
+
+        assert isinstance(content, StringAssetContent)
+        assert str(content) == 'test=True'
