@@ -7,7 +7,12 @@ from pydantic import BaseModel
 from pydantic.generics import GenericModel
 
 
-class Options(BaseModel, ABC):
+class _ConfigModel(BaseModel):
+    class Config:
+        copy_on_model_validation = False
+
+
+class Options(_ConfigModel, ABC):
     pass
 
 
@@ -34,5 +39,8 @@ T = TypeVar('T')
 class ComponentConfig(GenericModel, Generic[T]):
     name: str
     options: Optional[Options] = None
+
+    class Config(_ConfigModel.Config):
+        pass
 
 
