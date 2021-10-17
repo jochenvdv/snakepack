@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Mapping, Union, TypeVar, Generic, Iterable
+from typing import Mapping, Union, TypeVar, Generic, Iterable, Sequence
 
 from pydantic import BaseModel
 
@@ -9,11 +9,13 @@ from snakepack.bundlers import Bundler
 from snakepack.config import ComponentConfig
 from snakepack.loaders import Loader
 from snakepack.packagers import Packager
+from snakepack.transformers import Transformer
 
 
 class BundleConfig(BaseModel):
     bundler: ComponentConfig[Bundler]
     loader: ComponentConfig[Loader]
+    transformers: Sequence[ComponentConfig[Transformer]]
 
 
 class PackageConfig(BaseModel):

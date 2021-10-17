@@ -1,2 +1,11 @@
+from snakepack.assets import Asset
+from snakepack.transformers import Transformer
+
+
 class TransformerTest:
-    pass
+    class TestTransformer(Transformer):
+        def transform(self, asset: Asset):
+            pass
+
+    def test_init(self):
+        transformer = self.TestTransformer()

@@ -5,20 +5,27 @@ from snakepack.config import ComponentConfig
 from snakepack.config.model import SnakepackConfig, BundleConfig, PackageConfig
 from snakepack.loaders import Loader
 from snakepack.packagers import Packager
+from snakepack.transformers import Transformer
 
 
 class BundleConfigTest:
     def test_init(self, mocker):
         bundler_config = mocker.MagicMock(spec=ComponentConfig[Bundler])
         loader_config = mocker.MagicMock(spec=ComponentConfig[Loader])
+        transformer_configs = [
+            mocker.MagicMock(spec=ComponentConfig[Transformer]),
+            mocker.MagicMock(spec=ComponentConfig[Transformer])
+        ]
 
         config = BundleConfig(
             bundler=bundler_config,
-            loader=loader_config
+            loader=loader_config,
+            transformers=transformer_configs
         )
 
         assert config.bundler == bundler_config
         assert config.loader == loader_config
+        assert config.transformers == transformer_configs
 
 
 class PackageConfigTest:
@@ -33,6 +40,7 @@ class PackageConfigTest:
 
         assert config.bundles == bundles
         assert config.packager == packager_config
+
 
 class SnakepackConfigTest:
     def test_init(self, mocker):

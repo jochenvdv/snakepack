@@ -6,6 +6,9 @@ from snakepack.transformers.python.remove_comments import RemoveCommentsTransfor
 
 
 class RemoveCommentsTransformerTest:
+    def test_config_name(self):
+        assert RemoveCommentsTransformer.__config_name__ == 'remove_comments'
+
     def test_init(self):
         transformer = RemoveCommentsTransformer()
 
