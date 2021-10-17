@@ -9,6 +9,7 @@ python = "^3.9"
 libcst = "^0.3.21"
 boltons = "^21.0.0"
 modulegraph2 = "^2.2"
+pydantic = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"

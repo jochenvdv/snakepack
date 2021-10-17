@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABC
-from typing import Iterable, Dict
+from typing import Iterable, Dict, Optional
 
 from snakepack.bundlers import Bundle
+from snakepack.config import Options, ConfigurableComponent
 
 
 class Package:
@@ -28,7 +29,7 @@ class Package:
         return self._packager.package(self)
 
 
-class Packager(ABC):
+class Packager(ConfigurableComponent, ABC):
     @abstractmethod
     def package(self, package: Package):
         raise NotImplementedError

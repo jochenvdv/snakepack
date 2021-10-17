@@ -6,11 +6,21 @@ from snakepack.packagers.generic import DirectoryPackager
 
 
 class DirectoryPackagerTest:
+    def test_config_name(self):
+        assert DirectoryPackager.__config_name__ == 'directory'
+
     def test_init(self):
-        packager = DirectoryPackager(output_path='test')
+        options = DirectoryPackager.Options(output_path='test')
+        packager = DirectoryPackager(options)
+
+    def test_init_default_options(self):
+        packager = DirectoryPackager()
+
+        assert packager.options.output_path == '{package_name}'
 
     def test_package(self, mocker, fs):
-        packager = DirectoryPackager(output_path='{package_name}')
+        options = DirectoryPackager.Options(output_path='{package_name}')
+        packager = DirectoryPackager(options)
 
         bundle1 = mocker.MagicMock(spec=Bundle)
         bundle2 = mocker.MagicMock(spec=Bundle)

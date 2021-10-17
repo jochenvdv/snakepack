@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 from snakepack.assets import Asset
+from snakepack.config import ConfigurableComponent
 
 
 class Bundle:
@@ -28,7 +29,7 @@ class Bundle:
         return self._bundler.bundle(self)
 
 
-class Bundler(ABC):
+class Bundler(ConfigurableComponent, ABC):
     @abstractmethod
     def bundle(self, bundle: Bundle):
         raise NotImplementedError

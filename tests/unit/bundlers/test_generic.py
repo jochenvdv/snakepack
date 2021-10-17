@@ -6,11 +6,21 @@ from snakepack.bundlers.generic import FileBundler
 
 
 class FileBundlerTest:
+    def test_config_name(self):
+        assert FileBundler.__config_name__ == 'file'
+
     def test_init(self):
-        bundler = FileBundler(output_path='test')
+        options = FileBundler.Options(output_path='test')
+        bundler = FileBundler(options=options)
+
+    def test_init_default_options(self):
+        bundler = FileBundler()
+
+        assert bundler.options.output_path == '{bundle_name}'
 
     def test_bundle(self, mocker, fs):
-        bundler = FileBundler(output_path='{bundle_name}.py')
+        options = FileBundler.Options(output_path='{bundle_name}.py')
+        bundler = FileBundler(options=options)
 
         asset1 = mocker.MagicMock(spec=Asset)
         content1 = mocker.MagicMock(spec=AssetContent)

@@ -1,4 +1,5 @@
 from snakepack.bundlers import Bundle
+from snakepack.config import Options
 from snakepack.packagers import Packager, Package
 
 
@@ -34,6 +35,9 @@ class PackagerTest:
     class TestPackager(Packager):
         def package(self, package: Package):
             pass
+
+    def test_init(self):
+        packager = self.TestPackager()
 
     def test_package(self, mocker):
         packager = self.TestPackager()
