@@ -1,3 +1,4 @@
+import pytest
 from libcst import Module
 
 from snakepack.assets import AssetType, AssetContent
@@ -27,6 +28,14 @@ class PythonModuleCstTest:
 
         assert content.cst is cst
         assert str(content) == 'x=5'
+
+    @pytest.mark.skip
+    def test_from_string(self, mocker):
+        parse_module_mock = mocker.patch('libcst.parse_module')
+        cst = parse_module_mock.return_value
+        content = PythonModuleCst.from_string('x=5')
+
+        assert content.cst is cst
 
 
 class PythonPackageTest:

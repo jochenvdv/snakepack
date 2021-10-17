@@ -2,9 +2,8 @@ from snakepack.assets import (
     AssetType,
     Asset,
     AssetContent,
-    StringAssetContent, AssetGroup
+    StringAssetContent, AssetGroup, AssetContentSource, FileContentSource, AssetContentCache
 )
-from snakepack.assets._base import AssetContentSource, FileContentSource
 
 
 class AssetTypeTest:
@@ -47,6 +46,10 @@ class AssetContentTest:
 
         def __str__(self):
             return self._string
+
+        @classmethod
+        def from_string(cls, string_content):
+            return AssetContentTest.TestAssetContent('test')
 
     def test_init(self):
         content = self.TestAssetContent('test')
@@ -117,3 +120,64 @@ class FileContentSourceTest:
 
         assert isinstance(content, StringAssetContent)
         assert str(content) == 'test=True'
+
+
+class AssetContentCacheTest:
+    class TestAssetContentA(AssetContent):
+        def __str__(self):
+            return 'A'
+
+        @classmethod
+        def from_string(cls, string_content):
+            return cls()
+
+    class TestAssetContentB(AssetContent):
+        def __str__(self):
+            return 'B'
+
+        @classmethod
+        def from_string(cls, string_content):
+            return cls()
+
+    def test_init_with_source(self, mocker):
+        content_source = mocker.MagicMock(spec=AssetContentSource)
+        cache = AssetContentCache(content_or_source=content_source)
+
+    def test_init_with_content(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        cache = AssetContentCache(content_or_source=content)
+
+    def test_getattr(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        content.test = 'test'
+        cache = AssetContentCache(content_or_source=content)
+
+        assert cache.test == 'test'
+
+    def test_getattr_cache_miss(self, mocker):
+        content_source = mocker.MagicMock(spec=AssetContentSource)
+        content = mocker.MagicMock(spec=AssetContent)
+        content.test = 'test'
+        content_source.load.return_value = content
+        cache = AssetContentCache(content_or_source=content_source)
+
+        assert cache.test == 'test'
+
+    def test_getitem(self, mocker):
+        content = self.TestAssetContentA()
+        cache = AssetContentCache(content_or_source=content)
+
+        casted_cache = cache[self.TestAssetContentB]
+
+        assert casted_cache == cache
+        assert str(casted_cache) == 'B'
+
+    def test_getitem_cache_miss(self, mocker):
+        content_source = mocker.MagicMock(spec=AssetContentSource)
+        content_source.load.return_value = self.TestAssetContentA()
+        cache = AssetContentCache(content_or_source=content_source)
+
+        casted_cache = cache[self.TestAssetContentB]
+
+        assert casted_cache == cache
+        assert str(casted_cache) == 'B'

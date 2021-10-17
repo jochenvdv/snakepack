@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABC
-from typing import TypeVar, Protocol, Optional, Union, Generic
+from typing import TypeVar, Protocol, Optional, Union, Generic, Type, Any
 
 
 class AssetType(ABC):
@@ -45,7 +45,7 @@ class AssetGroup(Generic[T]):
 U = TypeVar('U', bound=Asset)
 
 
-class AssetContent(Generic[U]):
+class AssetContent(Generic[U], ABC):
     def to_string(self) -> StringAssetContent:
         return StringAssetContent(str(self))
 
@@ -53,14 +53,22 @@ class AssetContent(Generic[U]):
     def __str__(self):
         raise NotImplementedError
 
+    @classmethod
+    @abstractmethod
+    def from_string(cls, string_content) -> AssetContent:
+        raise NotImplementedError
+
 
 class StringAssetContent(AssetContent[U]):
     def __init__(self, string: str):
         self._string = string
 
-    @abstractmethod
     def __str__(self) -> str:
         return self._string
+
+    @classmethod
+    def from_string(cls, string_content) -> StringAssetContent:
+        return string_content
 
 
 class AssetContentSource(ABC):
@@ -84,3 +92,33 @@ class FileContentSource(AssetContentSource):
     def load(self) -> StringAssetContent:
         with open(self._path) as f:
             return StringAssetContent(f.read())
+
+
+class AssetContentCache:
+    def __init__(self, content_or_source: Union[AssetContentSource, AssetContent]):
+        if isinstance(content_or_source, AssetContentSource):
+            self._content_source = content_or_source
+            self._cached_content = None
+        else:
+            self._cached_content = content_or_source
+            self._content_source = None
+
+    def __getattr__(self, attr) -> Any:
+        self._ensure_content_loaded()
+        return getattr(self._cached_content, attr)
+
+    def __getitem__(self, item: Type[AssetContent]) -> AssetContentCache:
+        self._ensure_content_loaded()
+
+        if not isinstance(self._cached_content, item):
+            self._cached_content = item.from_string(self._cached_content.to_string())
+
+        return self
+
+    def __str__(self) -> str:
+        self._ensure_content_loaded()
+        return str(self._cached_content)
+
+    def _ensure_content_loaded(self):
+        if self._cached_content is None:
+            self._cached_content = self._content_source.load()
