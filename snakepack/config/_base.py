@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Generic, TypeVar, Optional, Mapping, Any
+from typing import Generic, TypeVar, Optional, Mapping, Any, Type
 
 from pydantic import BaseModel, root_validator, validator
 from pydantic.generics import GenericModel
@@ -44,13 +44,24 @@ T = TypeVar('T')
 class ComponentConfig(GenericModel, Generic[T]):
     name: str
     options: Optional[Any] = None
+    _component_class: Type[ConfigurableComponent]
 
-    @validator('options', allow_reuse=True)
+    def initialize_component(self):
+        return self._get_component_class(self.name)(options=self.options)
+
+    @validator('name', pre=True, allow_reuse=True)
+    def validate_name(cls, value):
+        component_class = cls._get_component_class(value)
+        assert component_class is not None, f'Unknown component \'{value}\''
+        cls._component_class = component_class
+        return value
+
+    @validator('options', always=True, allow_reuse=True)
     def validate_options(cls, value, values):
-        name = values['name']
+        if 'name' not in values:
+            return
 
-        if name not in ConfigurableComponent.__component_types__:
-            raise ConfigException(f'Unknown component \'{name}\'')
+        name = values['name']
 
         if value is None:
             return ConfigurableComponent.__component_types__[name].Options()
@@ -59,6 +70,10 @@ class ComponentConfig(GenericModel, Generic[T]):
             return value
 
         return ConfigurableComponent.__component_types__[name].Options(**value)
+
+    @classmethod
+    def _get_component_class(cls, name):
+        return ConfigurableComponent.__component_types__.get(name, None)
 
     class Config(_ConfigModel.Config):
         pass

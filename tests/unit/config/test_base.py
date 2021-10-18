@@ -1,4 +1,7 @@
-from snakepack.config import Options, ComponentConfig, ConfigurableComponent
+import pytest
+from pydantic import ValidationError
+
+from snakepack.config import Options, ComponentConfig, ConfigurableComponent, ConfigException
 
 
 class ConfigurableComponentTest:
@@ -43,8 +46,22 @@ class ComponentConfigTest:
         class Options(Options):
             test: bool
 
+    class TestComponentY(ConfigurableComponent):
+        __config_name__ = 'test_component_y'
+
+        class Options(Options):
+            pass
+
     def test_init(self):
-        config = ComponentConfig(name='test_component_x')
+        config = ComponentConfig(name='test_component_y')
+
+    def test_init_missing_options(self):
+        with pytest.raises(ValidationError):
+            config = ComponentConfig(name='test_component_x')
+
+    def test_init_unknown_component(self):
+        with pytest.raises(ValidationError):
+            config = ComponentConfig(name='test_component_z')
 
     def test_init_with_options_object(self, mocker):
         options = self.TestComponentX.Options(test=False)
@@ -54,6 +71,14 @@ class ComponentConfigTest:
         options = {'test': False}
         config = ComponentConfig(name='test_component_x', options=options)
 
+    def test_initialize_component(self):
+        options = self.TestComponentX.Options(test=False)
+        config = ComponentConfig(name='test_component_x', options=options)
+
+        component = config.initialize_component()
+
+        assert isinstance(component, self.TestComponentX)
+        assert component.options is options
 
 class OptionsTest:
     def test_init(self):
