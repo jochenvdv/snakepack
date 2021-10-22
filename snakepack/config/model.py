@@ -5,10 +5,10 @@ from typing import Mapping, Union, TypeVar, Generic, Iterable, Sequence
 
 from pydantic import BaseModel
 
-from snakepack.bundlers import Bundler
+from snakepack.bundlers import Bundler, Bundle
 from snakepack.config import ComponentConfig
 from snakepack.loaders import Loader
-from snakepack.packagers import Packager
+from snakepack.packagers import Packager, Package
 from snakepack.transformers import Transformer
 
 
