@@ -21,11 +21,11 @@ class Compiler:
         self._transform_assets()
 
     def _load_packages(self):
-        for package_name, package_config in self._config.packages:
+        for package_name, package_config in self._config.packages.items():
             packager = package_config.packager.initialize_component()
             bundles = []
 
-            for bundle_name, bundle_config in package_config.bundles:
+            for bundle_name, bundle_config in package_config.bundles.items():
                 bundler = bundle_config.bundler.initialize_component()
                 loader = bundle_config.loader.initialize_component()
                 transformers = [transformer.initialize_component() for transformer in bundle_config.transformers]

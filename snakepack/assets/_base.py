@@ -34,6 +34,10 @@ class Asset(Generic[T], ABC):
     def from_string(cls, string: str) -> Asset[T]:
         return cls(content=StringAssetContent(string))
 
+    @classmethod
+    def from_source(cls, source: AssetContentSource, **kwargs):
+        return cls(content=AssetContentCache(content_or_source=source), **kwargs)
+
 
 class AssetGroup(Generic[T]):
     @property
@@ -122,3 +126,6 @@ class AssetContentCache:
     def _ensure_content_loaded(self):
         if self._cached_content is None:
             self._cached_content = self._content_source.load()
+
+
+AssetContent.register(AssetContentCache)

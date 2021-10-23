@@ -1,6 +1,6 @@
 from functools import partial
 from pathlib import Path
-from typing import Mapping, Dict
+from typing import Mapping, Dict, Iterable
 
 from modulegraph2 import ModuleGraph, BaseNode, SourceModule
 
@@ -12,9 +12,9 @@ from snakepack.loaders import Loader
 
 
 class ImportGraphLoader(Loader):
-    def load(self) -> Mapping[Asset, AssetContentSource]:
+    def load(self) -> Iterable[Asset]:
         module_graph = ModuleGraph()
-        assets = {}
+        assets = []
 
         post_processing_hook = partial(self._process_node, assets=assets)
         module_graph.add_post_processing_hook(post_processing_hook)
@@ -23,14 +23,16 @@ class ImportGraphLoader(Loader):
         return assets
 
     @staticmethod
-    def _process_node(assets: Dict[Asset, AssetContentSource], graph: ModuleGraph, node: BaseNode):
+    def _process_node(assets: Iterable[Asset], graph: ModuleGraph, node: BaseNode):
         if ImportGraphLoader._is_stdlib(node):
             return
 
         if isinstance(node, SourceModule):
-            asset = PythonModule(full_name=node.name)
-            content_source = FileContentSource(node.filename)
-            assets.put(asset, content_source)
+            asset = PythonModule.from_source(
+                full_name=node.name,
+                source=FileContentSource(node.filename)
+            )
+            assets.append(asset)
 
     @staticmethod
     def _is_stdlib(node: BaseNode) -> bool:

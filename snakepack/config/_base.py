@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Generic, TypeVar, Optional, Mapping, Any, Type
+from typing import Generic, TypeVar, Optional, Mapping, Any, Type, Iterable
 
 from pydantic import BaseModel, root_validator, validator
 from pydantic.generics import GenericModel
@@ -82,3 +82,6 @@ class ComponentConfig(GenericModel, Generic[T]):
 class ConfigException(Exception):
     pass
 
+
+def register_components(component: Iterable[Type[ConfigurableComponent]]):
+    pass
