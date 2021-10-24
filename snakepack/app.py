@@ -12,12 +12,7 @@ from snakepack.transformers.python.remove_comments import RemoveCommentsTransfor
 
 DEFAULT_CONFIG_FILE = 'snakepack.yml'
 
-register_components([
-    DirectoryPackager,
-    FileBundler,
-    ImportGraphLoader,
-    RemoveCommentsTransformer
-])
+register_components()
 
 
 @click.command()

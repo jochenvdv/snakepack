@@ -1,5 +1,5 @@
 from snakepack.bundlers import Bundle
-from snakepack.config import Options
+from snakepack.config import Options, GlobalOptions
 from snakepack.packagers import Packager, Package
 
 
@@ -36,11 +36,13 @@ class PackagerTest:
         def package(self, package: Package):
             pass
 
-    def test_init(self):
-        packager = self.TestPackager()
+    def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        packager = self.TestPackager(global_options=global_options)
 
     def test_package(self, mocker):
-        packager = self.TestPackager()
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        packager = self.TestPackager(global_options=global_options)
         package = mocker.MagicMock(spec=Package)
 
         packager.package(package)

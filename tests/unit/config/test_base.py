@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from snakepack.config import Options, ComponentConfig, ConfigurableComponent, ConfigException
+from snakepack.config import Options, ComponentConfig, ConfigurableComponent, ConfigException, GlobalOptions
 
 
 class ConfigurableComponentTest:
@@ -14,23 +14,31 @@ class ConfigurableComponentTest:
 
         __config_name__ = 'test_component_b'
 
-    def test_init(self):
-        component = self.TestComponentA()
+    def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        component = self.TestComponentA(global_options=global_options)
 
         assert isinstance(component.options, ConfigurableComponent.Options)
+        assert component.global_options is global_options
 
-    def test_init_with_options(self):
+    def test_init_with_options(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         options = self.TestComponentA.Options()
-        component = self.TestComponentA(options=options)
+        component = self.TestComponentA(global_options=global_options, options=options)
 
         assert component.options is options
+        assert component.global_options is global_options
 
-    def test_init_options_defined(self):
-        component = self.TestComponentB()
+    def test_init_options_defined(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        component = self.TestComponentB(global_options=global_options)
 
-    def test_init_options_defined_and_passed(self):
+        assert isinstance(component.options, self.TestComponentB.Options)
+
+    def test_init_options_defined_and_passed(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         options = self.TestComponentB.Options(test=False)
-        component = self.TestComponentB(options=options)
+        component = self.TestComponentB(global_options=global_options, options=options)
 
         assert component.options is options
 
@@ -71,14 +79,16 @@ class ComponentConfigTest:
         options = {'test': False}
         config = ComponentConfig(name='test_component_x', options=options)
 
-    def test_initialize_component(self):
+    def test_initialize_component(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         options = self.TestComponentX.Options(test=False)
         config = ComponentConfig(name='test_component_x', options=options)
 
-        component = config.initialize_component()
+        component = config.initialize_component(global_options)
 
         assert isinstance(component, self.TestComponentX)
         assert component.options is options
+        assert component.global_options is global_options
 
 class OptionsTest:
     def test_init(self):

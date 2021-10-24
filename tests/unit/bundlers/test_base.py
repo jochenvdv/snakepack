@@ -1,6 +1,7 @@
 from snakepack.assets import Asset
 from snakepack.bundlers import Bundle
 from snakepack.bundlers._base import Bundler
+from snakepack.config import GlobalOptions
 from snakepack.loaders import Loader
 from snakepack.transformers import Transformer
 
@@ -39,8 +40,9 @@ class BundlerTest:
             pass
 
     def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         bundle = mocker.MagicMock(spec=Bundle)
-        bundler = self.TestBundler()
+        bundler = self.TestBundler(global_options=global_options)
 
         bundler.bundle(bundle)
 

@@ -2,6 +2,7 @@ from libcst import Module
 
 from snakepack.assets import Asset
 from snakepack.assets.python import PythonModuleCst
+from snakepack.config import GlobalOptions
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer
 
 
@@ -9,11 +10,13 @@ class RemoveCommentsTransformerTest:
     def test_config_name(self):
         assert RemoveCommentsTransformer.__config_name__ == 'remove_comments'
 
-    def test_init(self):
-        transformer = RemoveCommentsTransformer()
+    def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        transformer = RemoveCommentsTransformer(global_options=global_options)
 
     def test_transform(self, mocker):
-        transformer = RemoveCommentsTransformer()
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        transformer = RemoveCommentsTransformer(global_options=global_options)
 
         asset = mocker.MagicMock(spec=Asset)
         content = mocker.MagicMock(spec=PythonModuleCst)

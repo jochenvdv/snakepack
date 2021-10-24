@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC
+from pathlib import Path
 from typing import Generic, TypeVar, Optional, Mapping, Any, Type, Iterable
 
 from pydantic import BaseModel, root_validator, validator
 from pydantic.generics import GenericModel
+
+from snakepack.config.types import PythonVersion
 
 
 class _ConfigModel(BaseModel):
@@ -16,15 +19,27 @@ class Options(_ConfigModel, ABC):
     pass
 
 
+class GlobalOptions(BaseModel):
+    source_base_path: Path = Path('./')
+    target_base_path: Path = Path('dist/')
+    target_version: PythonVersion = PythonVersion.current()
+
+
 class ConfigurableComponent(ABC):
     __config_name__ = NotImplemented
     __component_types__ = {}
 
-    def __init__(self, options: Optional[Options] = None):
+    def __init__(self, global_options: GlobalOptions, options: Optional[Options] = None):
+        self._global_options = global_options
+
         if options is None:
             self._options = self.Options()
         else:
             self._options = options
+
+    @property
+    def global_options(self):
+        return self._global_options
 
     @property
     def options(self):
@@ -46,8 +61,11 @@ class ComponentConfig(GenericModel, Generic[T]):
     options: Optional[Any] = None
     _component_class: Type[ConfigurableComponent]
 
-    def initialize_component(self):
-        return self._get_component_class(self.name)(options=self.options)
+    def initialize_component(self, global_options: GlobalOptions):
+        return self._get_component_class(self.name)(
+            global_options=global_options,
+            options=self.options
+        )
 
     @validator('name', pre=True, allow_reuse=True)
     def validate_name(cls, value):
@@ -83,5 +101,5 @@ class ConfigException(Exception):
     pass
 
 
-def register_components(component: Iterable[Type[ConfigurableComponent]]):
+def register_components():
     pass

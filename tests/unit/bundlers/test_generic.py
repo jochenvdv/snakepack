@@ -3,24 +3,28 @@ import os
 from snakepack.assets import Asset, AssetContent
 from snakepack.bundlers import Bundle
 from snakepack.bundlers.generic import FileBundler
+from snakepack.config import GlobalOptions
 
 
 class FileBundlerTest:
     def test_config_name(self):
         assert FileBundler.__config_name__ == 'file'
 
-    def test_init(self):
+    def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         options = FileBundler.Options(output_path='test')
-        bundler = FileBundler(options=options)
+        bundler = FileBundler(global_options=global_options, options=options)
 
-    def test_init_default_options(self):
-        bundler = FileBundler()
+    def test_init_default_options(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        bundler = FileBundler(global_options=global_options)
 
         assert bundler.options.output_path == '{bundle_name}'
 
     def test_bundle(self, mocker, fs):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
         options = FileBundler.Options(output_path='{bundle_name}.py')
-        bundler = FileBundler(options=options)
+        bundler = FileBundler(global_options=global_options, options=options)
 
         asset1 = mocker.MagicMock(spec=Asset)
         content1 = mocker.MagicMock(spec=AssetContent)

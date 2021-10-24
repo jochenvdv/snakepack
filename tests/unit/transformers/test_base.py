@@ -1,4 +1,5 @@
 from snakepack.assets import Asset
+from snakepack.config import GlobalOptions
 from snakepack.transformers import Transformer
 
 
@@ -9,5 +10,6 @@ class TransformerTest:
 
         __config_name__ = 'test_transformer'
 
-    def test_init(self):
-        transformer = self.TestTransformer()
+    def test_init(self, mocker):
+        global_options = mocker.MagicMock(spec=GlobalOptions)
+        transformer = self.TestTransformer(global_options=global_options)

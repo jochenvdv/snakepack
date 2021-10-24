@@ -3,6 +3,7 @@ from textwrap import dedent
 from libcst import parse_module
 
 from snakepack.assets.python import PythonModule, PythonModuleCst
+from snakepack.config import GlobalOptions
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer
 
 
@@ -21,7 +22,8 @@ class RemoveCommentsTransformerIntegrationTest:
             )
         )
 
-        transformer = RemoveCommentsTransformer()
+        global_options = GlobalOptions()
+        transformer = RemoveCommentsTransformer(global_options=global_options)
         new_content = transformer.transform(asset)
 
         assert str(new_content) == dedent(

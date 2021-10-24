@@ -6,7 +6,8 @@ from typing import Mapping, Union, TypeVar, Generic, Iterable, Sequence
 from pydantic import BaseModel
 
 from snakepack.bundlers import Bundler, Bundle
-from snakepack.config import ComponentConfig
+from snakepack.config import ComponentConfig, GlobalOptions
+from snakepack.config.types import PythonVersion
 from snakepack.loaders import Loader
 from snakepack.packagers import Packager, Package
 from snakepack.transformers import Transformer
@@ -23,8 +24,5 @@ class PackageConfig(BaseModel):
     bundles: Mapping[str, BundleConfig] = {}
 
 
-class SnakepackConfig(BaseModel):
-    source_base_path: Path = Path('./')
-    target_base_path: Path = Path('dist/')
-
+class SnakepackConfig(GlobalOptions):
     packages: Mapping[str, PackageConfig] = {}
