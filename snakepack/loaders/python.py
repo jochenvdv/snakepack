@@ -18,7 +18,8 @@ class ImportGraphLoader(Loader):
 
         post_processing_hook = partial(self._process_node, assets=assets)
         module_graph.add_post_processing_hook(post_processing_hook)
-        module_graph.add_script(self._options.entry_point)
+        entry_point_path = self.global_options.source_base_path / self._options.entry_point
+        module_graph.add_script(entry_point_path)
 
         return assets
 

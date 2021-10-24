@@ -22,7 +22,9 @@ class FileBundlerTest:
         assert bundler.options.output_path == '{bundle_name}'
 
     def test_bundle(self, mocker, fs):
+        fs.create_dir('dist/')
         global_options = mocker.MagicMock(spec=GlobalOptions)
+        global_options.target_base_path = 'dist/'
         options = FileBundler.Options(output_path='{bundle_name}.py')
         bundler = FileBundler(global_options=global_options, options=options)
 
@@ -44,12 +46,12 @@ class FileBundlerTest:
 
         bundler.bundle(bundle)
 
-        assert os.path.exists('asset1.py')
+        assert os.path.exists('dist/asset1.py')
 
-        with open('asset1.py') as f:
+        with open('dist/asset1.py') as f:
             assert f.read() == 'test=True'
 
-        assert os.path.exists('asset2.py')
+        assert os.path.exists('dist/asset2.py')
 
-        with open('asset2.py') as f:
+        with open('dist/asset2.py') as f:
             assert f.read() == 'test=False'

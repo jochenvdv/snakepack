@@ -7,7 +7,7 @@ from snakepack.config import Options
 class FileBundler(Bundler):
     def bundle(self, bundle: Bundle):
         for asset in bundle.assets:
-            output_path = self._options.output_path.format(bundle_name=asset.name)
+            output_path = self._global_options.target_base_path / Path(self._options.output_path.format(bundle_name=asset.name))
 
             with open(output_path, 'w+') as f:
                 f.write(str(asset.content))

@@ -23,6 +23,7 @@ class DirectoryPackagerTest:
 
     def test_package(self, mocker, fs):
         global_options = mocker.MagicMock(spec=GlobalOptions)
+        global_options.target_base_path = 'dist/'
         options = DirectoryPackager.Options(output_path='{package_name}')
         packager = DirectoryPackager(global_options=global_options, options=options)
 
@@ -39,6 +40,6 @@ class DirectoryPackagerTest:
 
         packager.package(package)
 
-        assert os.path.isdir('mypackage')
+        assert os.path.isdir('dist/mypackage')
         bundle1.bundle.assert_called_once()
         bundle2.bundle.assert_called_once()

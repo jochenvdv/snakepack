@@ -8,7 +8,7 @@ from snakepack.packagers import Packager, Package
 
 class DirectoryPackager(Packager):
     def package(self, package: Package):
-        output_path = Path(self._options.output_path.format(package_name=package.name))
+        output_path = self._global_options.target_base_path / Path(self._options.output_path.format(package_name=package.name))
         output_path.mkdir(parents=True, exist_ok=True)
 
         for bundle in package.bundles.values():
