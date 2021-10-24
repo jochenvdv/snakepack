@@ -5,30 +5,32 @@ from libcst import parse_module
 from snakepack.assets.python import PythonModule, PythonModuleCst
 from snakepack.config import GlobalOptions
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer
+from tests.integration.transformers._base import TransformerIntegrationTestBase
 
 
-class RemoveCommentsTransformerIntegrationTest:
+class RemoveCommentsTransformerIntegrationTest(TransformerIntegrationTestBase):
     def test_transform(self):
-        orig_code = dedent(
-            """
-            # this is a comment
-            x = 5 # this as well
-            """
-        )
-        asset = PythonModule(
-            full_name='test',
-            content=PythonModuleCst(
-                cst=parse_module(orig_code)
+        input_content = PythonModuleCst(
+            cst=parse_module(
+                dedent(
+                    """
+                    # this is a comment
+                    x = 5 # this as well
+                    """
+                )
             )
         )
+        expected_output_content = PythonModuleCst(
+            cst=parse_module(
+                dedent(
+                    """
 
+                    x = 5 
+                    """
+                )
+            )
+        )
         global_options = GlobalOptions()
         transformer = RemoveCommentsTransformer(global_options=global_options)
-        new_content = transformer.transform(asset)
 
-        assert str(new_content) == dedent(
-            """
-            
-            x = 5 
-            """
-        )
+        self._test_transformation(transformer=transformer, input=input_content, expected_output=expected_output_content)

@@ -13,8 +13,8 @@ class RemoveCommentsTransformer(Transformer):
         super().__init__(*args, **kwargs)
         self._transformer = self._CstTransformer()
 
-    def transform(self, asset: PythonModule) -> PythonModuleCst:
-        return PythonModuleCst(cst=asset.content.cst.visit(self._transformer))
+    def transform(self, content: PythonModuleCst) -> PythonModuleCst:
+        return PythonModuleCst(cst=content.cst.visit(self._transformer))
 
     class _CstTransformer(CSTTransformer):
         def leave_Comment(self, original_node: Comment, updated_node: Comment) -> Union[Comment, RemovalSentinel]:

@@ -18,12 +18,10 @@ class RemoveCommentsTransformerTest:
         global_options = mocker.MagicMock(spec=GlobalOptions)
         transformer = RemoveCommentsTransformer(global_options=global_options)
 
-        asset = mocker.MagicMock(spec=Asset)
         content = mocker.MagicMock(spec=PythonModuleCst)
         orig_cst = mocker.MagicMock(spec=Module)
         changed_cst = mocker.MagicMock(spec=Module)
         content.cst = orig_cst
-        asset.content = content
         orig_cst.visit.return_value = changed_cst
 
-        assert transformer.transform(asset).cst is changed_cst
+        assert transformer.transform(content).cst is changed_cst
