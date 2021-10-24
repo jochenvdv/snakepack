@@ -44,3 +44,8 @@ class ImportGraphLoader(Loader):
         exclude_stdlib: bool = True
 
     __config_name__ = 'import_graph'
+
+
+__all__ = [
+    ImportGraphLoader
+]

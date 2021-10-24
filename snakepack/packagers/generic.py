@@ -18,3 +18,8 @@ class DirectoryPackager(Packager):
         output_path: str = '{package_name}'
 
     __config_name__ = 'directory'
+
+
+__all__ = [
+    DirectoryPackager
+]

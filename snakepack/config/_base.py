@@ -102,4 +102,7 @@ class ConfigException(Exception):
 
 
 def register_components():
-    pass
+    from snakepack.bundlers import __all__
+    from snakepack.packagers import __all__
+    from snakepack.loaders import __all__
+    from snakepack.transformers import __all__

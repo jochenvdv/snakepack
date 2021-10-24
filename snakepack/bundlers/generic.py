@@ -16,3 +16,8 @@ class FileBundler(Bundler):
         output_path: str = '{bundle_name}'
 
     __config_name__ = 'file'
+
+
+__all__ = [
+    FileBundler
+]
