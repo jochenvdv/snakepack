@@ -2,20 +2,10 @@ from typing import Optional, Union
 
 from libcst import CSTTransformer, Comment, RemovalSentinel
 
-from snakepack.assets import Asset
-from snakepack.assets.python import PythonModuleCst, PythonModule
-from snakepack.config import Options
-from snakepack.transformers import Transformer
+from snakepack.transformers.python._base import PythonModuleCstTransformer
 
 
-class RemoveCommentsTransformer(Transformer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._transformer = self._CstTransformer()
-
-    def transform(self, content: PythonModuleCst) -> PythonModuleCst:
-        return PythonModuleCst(cst=content.cst.visit(self._transformer))
-
+class RemoveCommentsTransformer(PythonModuleCstTransformer):
     class _CstTransformer(CSTTransformer):
         def leave_Comment(self, original_node: Comment, updated_node: Comment) -> Union[Comment, RemovalSentinel]:
             return RemovalSentinel.REMOVE
