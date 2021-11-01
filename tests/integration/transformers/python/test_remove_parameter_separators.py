@@ -2,13 +2,13 @@ from textwrap import dedent
 
 from libcst import parse_module
 
-from snakepack.assets.python import PythonModule, PythonModuleCst
+from snakepack.assets.python import PythonModuleCst
 from snakepack.config import GlobalOptions
 from snakepack.transformers.python.remove_parameter_separators import RemoveParameterSeparatorsTransformer
-from tests.integration.transformers._base import TransformerIntegrationTestBase
+from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveParameterSeparatorsTransformerIntegrationTest(TransformerIntegrationTestBase):
+class RemoveParameterSeparatorsPythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

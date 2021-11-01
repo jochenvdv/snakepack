@@ -4,7 +4,7 @@ from snakepack.assets import AssetContent, Asset
 from snakepack.transformers import Transformer
 
 
-class TransformerIntegrationTestBase:
+class PythonModuleCstTransformerIntegrationTestBase:
     def _test_transformation(self, transformer: Transformer, input: AssetContent, expected_output: AssetContent):
         # initial transformation
         output_first_pass = transformer.transform(content=input)
@@ -14,14 +14,14 @@ class TransformerIntegrationTestBase:
         assert len(str(output_first_pass)) < len(str(input)), 'Transformer output is larger than input'
 
 
-        # try:
-        #     compile(
-        #         source=str(output_first_pass),
-        #         filename='<string>',
-        #         mode='exec'
-        #     )
-        # except SyntaxError as e:
-        #     pytest.fail('Transformer output contains syntax errors')
+        try:
+            compile(
+                source=str(output_first_pass),
+                filename='<string>',
+                mode='exec'
+            )
+        except SyntaxError as e:
+            pytest.fail('Transformer output contains syntax errors')
 
         # second transformation on original input
         output_second_pass = transformer.transform(content=input)
