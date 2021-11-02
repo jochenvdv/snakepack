@@ -4,11 +4,11 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
     MaybeSentinel, FunctionDef, SimpleStatementSuite, IndentedBlock, Pass, BaseSmallStatement, Expr, Integer, BaseSuite, \
     BaseNumber, BaseString, Tuple, BaseList, BaseSet, BaseDict
 
-from snakepack.transformers.python._base import PythonModuleCstTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer
 
 
-class RemoveLiteralStatementsTransformer(PythonModuleCstTransformer):
-    class _CstTransformer(CSTTransformer):
+class RemoveLiteralStatementsTransformer(PythonModuleTransformer):
+    class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_SimpleStatementSuite(
                 self,
                 original_node: SimpleStatementSuite,

@@ -11,11 +11,11 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
     CompIf, Subscript, UnaryOperation, Not, BooleanOperation, BinaryOperation, Comparison, ComparisonTarget, In, Is, \
     NotIn, IsNot
 
-from snakepack.transformers.python._base import PythonModuleCstTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer
 
 
-class RemoveWhitespaceTransformer(PythonModuleCstTransformer):
-    class _CstTransformer(CSTTransformer):
+class RemoveWhitespaceTransformer(PythonModuleTransformer):
+    class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_AssignTarget(
                 self, original_node: AssignTarget, updated_node: AssignTarget
         ) -> Union[AssignTarget, FlattenSentinel[AssignTarget], RemovalSentinel]:

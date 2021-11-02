@@ -3,13 +3,13 @@ from typing import Optional, Union
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, FunctionDef, SimpleStatementSuite, IndentedBlock, Pass, BaseSmallStatement, Expr, Integer
 
-from snakepack.transformers.python._base import PythonModuleCstTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer
 
 
-class RemovePassTransformer(PythonModuleCstTransformer):
-    class _CstTransformer(CSTTransformer):
-        def __init__(self):
-            super().__init__()
+class RemovePassTransformer(PythonModuleTransformer):
+    class _CstTransformer(PythonModuleTransformer._CstTransformer):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             self._necessary_pass_stmts = set()
 
         def visit_SimpleStatementSuite(self, node: SimpleStatementSuite) -> Optional[bool]:
