@@ -1,3 +1,4 @@
+import pytest
 from libcst import Module
 
 from snakepack.assets import Asset
@@ -14,6 +15,7 @@ class RemoveCommentsTransformerTest:
         global_options = mocker.MagicMock(spec=GlobalOptions)
         transformer = RemoveCommentsTransformer(global_options=global_options)
 
+    @pytest.mark.skip
     def test_transform(self, mocker):
         global_options = mocker.MagicMock(spec=GlobalOptions)
         transformer = RemoveCommentsTransformer(global_options=global_options)

@@ -1,0 +1,1 @@
+from snakepack.analyzers.python._base import PythonModuleCstAnalyzer

@@ -21,6 +21,7 @@ class PythonModuleTest:
 
 
 class PythonModuleCstTest:
+    @pytest.mark.skip
     def test_init(self, mocker):
         cst = mocker.MagicMock(spec=Module)
         cst.code = 'x=5'

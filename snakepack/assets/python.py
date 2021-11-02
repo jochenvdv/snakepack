@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Iterable
 
 from boltons.iterutils import first, flatten
-from libcst import Module, parse_module
+from libcst import Module, parse_module, MetadataWrapper
 
 from snakepack.assets import (
     Asset,
@@ -33,14 +33,18 @@ class PythonModule(Asset[Python]):
 
 class PythonModuleCst(AssetContent[PythonModule]):
     def __init__(self, cst: Module):
-        self._cst = cst
+        self._wrapper = MetadataWrapper(module=cst)
 
     def __str__(self):
-        return self._cst.code
+        return self._wrapper.module.code
 
     @property
     def cst(self) -> Module:
-        return self._cst
+        return self._wrapper.module
+
+    @property
+    def metadata_wrapper(self):
+        return self._wrapper
 
     @classmethod
     def from_string(cls, string_content) -> AssetContent:
