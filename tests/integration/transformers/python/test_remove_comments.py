@@ -8,7 +8,7 @@ from snakepack.transformers.python.remove_comments import RemoveCommentsTransfor
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveCommentsPythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+class RemoveCommentsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

@@ -8,7 +8,7 @@ from snakepack.transformers.python.remove_assertions import RemoveAssertionsTran
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveAssertionsPythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+class RemoveAssertionsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

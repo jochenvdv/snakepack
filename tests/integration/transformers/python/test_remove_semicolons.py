@@ -8,7 +8,7 @@ from snakepack.transformers.python.remove_semicolons import RemoveSemicolonsTran
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveSemicolonsPythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+class RemoveSemicolonsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

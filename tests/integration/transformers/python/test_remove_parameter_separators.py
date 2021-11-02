@@ -8,7 +8,7 @@ from snakepack.transformers.python.remove_parameter_separators import RemovePara
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveParameterSeparatorsPythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+class RemoveParameterSeparatorsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

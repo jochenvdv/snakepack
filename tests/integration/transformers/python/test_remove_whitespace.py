@@ -8,7 +8,7 @@ from snakepack.transformers.python.remove_whitespace import RemoveWhitespaceTran
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 
 
-class RemoveWhitespacePythonModuleCstTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+class RemoveWhitespaceTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(
