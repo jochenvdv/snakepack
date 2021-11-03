@@ -16,13 +16,14 @@ class PythonModuleTransformer(Transformer):
             subject: Union[PythonModule, AssetGroup[Python]]
     ) -> Union[PythonModule, AssetGroup[Python]]:
         if isinstance(subject, PythonModule):
-            transformer = self._CstTransformer(options=self._options, analyses=analyses)
+            transformer = self._CstTransformer(subject=subject, options=self._options, analyses=analyses)
             subject.content = PythonModuleCst(cst=subject.content.cst.visit(transformer))
 
         return subject
 
     class _CstTransformer(CSTTransformer):
-        def __init__(self, options: Options, analyses: Mapping[Type[Analyzer], Analyzer.Analysis]):
+        def __init__(self, subject: PythonModule, options: Options, analyses: Mapping[Type[Analyzer], Analyzer.Analysis]):
             super().__init__()
+            self._subject = subject
             self._options = options
             self._analyses = analyses

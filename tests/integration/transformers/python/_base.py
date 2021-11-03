@@ -1,15 +1,26 @@
+from typing import Optional, Iterable
+
 import pytest
 
+from snakepack.analyzers import Analyzer
 from snakepack.assets import AssetContent, Asset
 from snakepack.assets.python import PythonModule
 from snakepack.transformers import Transformer
 
 
 class PythonModuleCstTransformerIntegrationTestBase:
-    def _test_transformation(self, transformer: Transformer, input: AssetContent, expected_output: AssetContent):
-        # initial transformation
+    def _test_transformation(self, transformer: Transformer, input: AssetContent, expected_output: AssetContent, analyzers: Optional[Iterable[Analyzer]] = None):
+        # analysis
         subject = PythonModule(full_name='test', content=input)
-        output_first_pass = transformer.transform(analyses={}, subject=subject)
+        analyses = {}
+
+        if analyzers is not None:
+            for analyzer in analyzers:
+                analysis = analyzer.analyse(subject)
+                analyses[analyzer.__class__] = analysis
+
+        # initial transformation
+        output_first_pass = transformer.transform(analyses=analyses, subject=subject)
 
         assert output_first_pass.content is not input, 'Transformer output is same object as input'
         assert str(output_first_pass.content) == str(expected_output), 'Transformer output doesn\'t match expected output'
@@ -27,11 +38,23 @@ class PythonModuleCstTransformerIntegrationTestBase:
 
         # second transformation on original input
         subject = PythonModule(full_name='test', content=input)
-        output_second_pass = transformer.transform(analyses={}, subject=subject)
+
+        if analyzers is not None:
+            for analyzer in analyzers:
+                analysis = analyzer.analyse(subject)
+                analyses[analyzer.__class__] = analysis
+
+        output_second_pass = transformer.transform(analyses=analyses, subject=subject)
         assert str(output_second_pass.content) == str(output_first_pass.content), 'Transformer isn\'t idempotent'
 
         # second transformation on output of initial transformation
         subject = PythonModule(full_name='test', content=output_second_pass.content)
-        output_third_pass = transformer.transform(analyses={}, subject=subject)
+
+        if analyzers is not None:
+            for analyzer in analyzers:
+                analysis = analyzer.analyse(subject)
+                analyses[analyzer.__class__] = analysis
+
+        output_third_pass = transformer.transform(analyses=analyses, subject=subject)
         assert str(output_third_pass.content) == str(output_second_pass.content), 'Transformer output is not fully transformed'
 

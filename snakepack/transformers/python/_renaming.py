@@ -5,7 +5,6 @@ from typing import Mapping, Iterable, Dict, Set, Optional, List, Generator
 from libcst.metadata import Scope, Assignment
 
 
-
 class NameRegistry:
     def __init__(self):
         self._scopes: Dict[Scope, Generator[str, None, None]] = {}
