@@ -40,11 +40,11 @@ class Bundle:
     def load(self):
         self._assets = self._loader.load()
 
-    def bundle(self):
-        return self._bundler.bundle(self)
+    def bundle(self, *args, **kwargs):
+        return self._bundler.bundle(self, *args, **kwargs)
 
 
 class Bundler(ConfigurableComponent, ABC):
     @abstractmethod
-    def bundle(self, bundle: Bundle):
+    def bundle(self, bundle: Bundle, package):
         raise NotImplementedError

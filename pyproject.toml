@@ -8,10 +8,10 @@ authors = ["Jochen Van de Velde <mail@jochenvandevelde.be>"]
 python = "^3.9"
 libcst = "^0.3.21"
 boltons = "^21.0.0"
-modulegraph2 = "^2.2"
 pydantic = "^1.8.2"
 PyYAML = "^6.0"
 click = "^8.0.3"
+modulegraph = "^0.19.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"

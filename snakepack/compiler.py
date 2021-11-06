@@ -2,6 +2,7 @@ from collections import namedtuple
 from typing import Optional, Dict, Iterable, List
 
 from snakepack.assets import AssetContentSource, Asset
+from snakepack.assets.python import PythonModuleCst
 from snakepack.bundlers import Bundle
 from snakepack.config import ComponentConfig
 from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
@@ -19,6 +20,7 @@ class Compiler:
         self._load_packages()
         self._load_assets()
         self._transform_assets()
+        self._package_assets()
 
     def _load_packages(self):
         for package_name, package_config in self._config.packages.items():
@@ -48,5 +50,10 @@ class Compiler:
         for package in self._packages:
             for bundle in package.bundles.values():
                 for asset in bundle.assets:
+                    asset.content[PythonModuleCst]
                     for transformer in bundle.transformers:
-                        transformer.transform(asset)
+                        transformer.transform(analyses={}, subject=asset)
+
+    def _package_assets(self):
+        for package in self._packages:
+            package.package()

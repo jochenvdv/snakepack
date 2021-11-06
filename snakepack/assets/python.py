@@ -48,7 +48,7 @@ class PythonModuleCst(AssetContent[PythonModule]):
 
     @classmethod
     def from_string(cls, string_content) -> AssetContent:
-        return PythonModuleCst(cst=parse_module(string_content))
+        return PythonModuleCst(cst=parse_module(str(string_content)))
 
 
 class PythonPackage(AssetGroup[Python]):

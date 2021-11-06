@@ -2,18 +2,21 @@ from pathlib import Path
 
 from snakepack.bundlers import Bundler, Bundle
 from snakepack.config import Options
+from snakepack.packagers import Package
 
 
 class FileBundler(Bundler):
-    def bundle(self, bundle: Bundle):
+    def bundle(self, bundle: Bundle, package: Package):
         for asset in bundle.assets:
-            output_path = self._global_options.target_base_path / Path(self._options.output_path.format(bundle_name=asset.name))
+            bundle_name = asset.full_name.replace('.', '/')
+            output_path = package.target_path / Path(self._options.output_path.format(bundle_name=bundle_name))
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
             with open(output_path, 'w+') as f:
                 f.write(str(asset.content))
 
     class Options(Options):
-        output_path: str = '{bundle_name}'
+        output_path: str = '{bundle_name}.py'
 
     __config_name__ = 'file'
 

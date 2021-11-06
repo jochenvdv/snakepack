@@ -1,4 +1,12 @@
 [[package]]
+name = "altgraph"
+version = "0.17.2"
+description = "Python graph (network) package"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -164,16 +172,15 @@ typing-inspect = ">=0.4.0"
 dev = ["black (==20.8b1)", "coverage (>=4.5.4)", "fixit (==0.1.1)", "flake8 (>=3.7.8)", "hypothesis (>=4.36.0)", "hypothesmith (>=0.0.4)", "jupyter (>=1.0.0)", "nbsphinx (>=0.4.2)", "prompt-toolkit (>=2.0.9)", "pyre-check (==0.9.3)", "setuptools-scm (>=6.0.1)", "sphinx-rtd-theme (>=0.4.3)", "tox (>=3.18.1)", "ufmt (==1.2)", "usort (==0.6.3)"]
 
 [[package]]
-name = "modulegraph2"
-version = "2.2"
-description = "A module import dependency graph for Python projects."
+name = "modulegraph"
+version = "0.19.2"
+description = "Python module dependency analysis tool"
 category = "main"
 optional = false
-python-versions = ">=3.6,<4"
+python-versions = "*"
 
 [package.dependencies]
-objectgraph = "*"
-typing_extensions = "*"
+altgraph = ">=0.15"
 
 [[package]]
 name = "mypy-extensions"
@@ -182,17 +189,6 @@ description = "Experimental type system extensions for programs checked with the
 category = "main"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "objectgraph"
-version = "1.0.3"
-description = "A basic graph library"
-category = "main"
-optional = false
-python-versions = ">=3.6,<4"
-
-[package.dependencies]
-typing_extensions = "*"
 
 [[package]]
 name = "packaging"
@@ -441,9 +437,13 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ba645dc7066c027e4e25e5650941141ef4630878bac4d13593f43f874b5b2127"
+content-hash = "c66a92b3ea5f8c6d3f4eda69b78634272caf7d0ed50a36ff7ff922618d2309d6"
 
 [metadata.files]
+altgraph = [
+    {file = "altgraph-0.17.2-py2.py3-none-any.whl", hash = "sha256:743628f2ac6a7c26f5d9223c91ed8ecbba535f506f4b6f558885a8a56a105857"},
+    {file = "altgraph-0.17.2.tar.gz", hash = "sha256:ebf2269361b47d97b3b88e696439f6e4cbc607c17c51feb1754f90fb79839158"},
+]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
     {file = "atomicwrites-1.4.0.tar.gz", hash = "sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a"},
@@ -546,17 +546,13 @@ libcst = [
     {file = "libcst-0.3.21-py3-none-any.whl", hash = "sha256:a9c6fea4fa3bf92f87e40c6850dec099aaa7aaf963a934c763844544b32d3a1e"},
     {file = "libcst-0.3.21.tar.gz", hash = "sha256:4302a8f09cd9e5ab5962f8e126d032bba98541893dd38cce6b4770969fed059d"},
 ]
-modulegraph2 = [
-    {file = "modulegraph2-2.2-py3-none-any.whl", hash = "sha256:4fdf90ebb35109c232e925158a29be9910b9d8e2fa4bd57863fdccb0afaa18f1"},
-    {file = "modulegraph2-2.2.tar.gz", hash = "sha256:6452aa294e3a1fb4d0d6faca2ef0879e2fa2c23a135a5a202d08db3518d44fcc"},
+modulegraph = [
+    {file = "modulegraph-0.19.2-py2.py3-none-any.whl", hash = "sha256:7985a8b3d97307b26e1872949973239b273602a041a3e2caedf80bc640909991"},
+    {file = "modulegraph-0.19.2.tar.gz", hash = "sha256:14c59c10874001aa9c1d527f114870991c0d8dfc6baf6c7e27f885df794a8239"},
 ]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
-]
-objectgraph = [
-    {file = "objectgraph-1.0.3-py3-none-any.whl", hash = "sha256:a19bbec5ce193f3e80dfb06529d4dbce80c5165d3b3b55afb344fe0567ee8cd4"},
-    {file = "objectgraph-1.0.3.tar.gz", hash = "sha256:4f214c1d72c1dd1c2122b1d7b3348169834e99bb88aab0a4e1de2bfd01316451"},
 ]
 packaging = [
     {file = "packaging-21.0-py3-none-any.whl", hash = "sha256:c86254f9220d55e31cc94d69bade760f0847da8000def4dfe1c6b872fd14ff14"},

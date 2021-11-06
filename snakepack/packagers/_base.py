@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABC
+from pathlib import Path
 from typing import Iterable, Dict, Optional
 
 from snakepack.bundlers import Bundle
@@ -25,6 +26,10 @@ class Package:
     def packager(self) -> Packager:
         return self._packager
 
+    @property
+    def target_path(self) -> Path:
+        return self._packager.get_target_path(self)
+
     def package(self):
         return self._packager.package(self)
 
@@ -32,4 +37,8 @@ class Package:
 class Packager(ConfigurableComponent, ABC):
     @abstractmethod
     def package(self, package: Package):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_target_path(self, package: Package) -> Path:
         raise NotImplementedError

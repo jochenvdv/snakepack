@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from snakepack.bundlers import Bundle
 from snakepack.config import Options, GlobalOptions
 from snakepack.packagers import Packager, Package
@@ -35,6 +37,9 @@ class PackagerTest:
     class TestPackager(Packager):
         def package(self, package: Package):
             pass
+
+        def get_target_path(self, package: Package) -> Path:
+            return Path(package.name)
 
     def test_init(self, mocker):
         global_options = mocker.MagicMock(spec=GlobalOptions)
