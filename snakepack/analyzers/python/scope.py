@@ -14,8 +14,7 @@ from snakepack.assets.python import PythonModule, PythonModuleCst
 class ScopeAnalyzer(PythonModuleCstAnalyzer):
     def analyse(self, subject: Union[Asset, AssetGroup]) -> ScopeAnalyzer.Analysis:
         if isinstance(subject, PythonModule):
-            metadata = subject.content.metadata_wrapper.resolve(ScopeProvider
-)
+            metadata = subject.content.metadata_wrapper.resolve(ScopeProvider)
 
             return ScopeAnalyzer.Analysis(
                 modules_metadata={
