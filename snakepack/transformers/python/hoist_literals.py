@@ -27,10 +27,6 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                 return updated_node
 
             # check if assignment exists for this value
-            assignment = self._analyses[LiteralDuplicationAnalyzer].get_num_occurrences(self._subject, original_node)
-
-            for assigment in self._analyses[ScopeAnalyzer][original_node]:
-
 
             # calculate size impact of hoisting
             new_identifier = 'a'
