@@ -9,7 +9,7 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
     BaseFormattedStringContent, StarredElement, BaseElement, DictElement, BaseDictElement, LeftParen, RightParen, \
     LeftSquareBracket, RightSquareBracket, LeftCurlyBrace, RightCurlyBrace, StarredDictElement, DictComp, CompFor, \
     CompIf, Subscript, UnaryOperation, Not, BooleanOperation, BinaryOperation, Comparison, ComparisonTarget, In, Is, \
-    NotIn, IsNot
+    NotIn, IsNot, CSTValidationError
 
 from snakepack.transformers.python._base import PythonModuleTransformer
 
@@ -288,12 +288,20 @@ class RemoveWhitespaceTransformer(PythonModuleTransformer):
 
         def leave_Lambda(self, original_node: Lambda, updated_node: Lambda) -> BaseExpression:
             semantic = (
-                    updated_node.params.params or
-                    updated_node.params.kwonly_params or
-                    updated_node.params.posonly_params
+                    len(updated_node.params.params) > 0 or
+                    len(updated_node.params.kwonly_params) > 0 or
+                    len(updated_node.params.posonly_params) > 0 or
+                    updated_node.params.star_arg is not None or
+                    updated_node.params.star_kwarg is not None
             )
 
-            return self._remove_whitespace(updated_node, 'whitespace_after_lambda', semantic=semantic)
+            try:
+                return self._remove_whitespace(updated_node, 'whitespace_after_lambda', semantic=semantic)
+            except CSTValidationError as e:
+                print(semantic)
+                print(updated_node)
+                print(e)
+                return updated_node
 
         def leave_Param(
                 self, original_node: Param, updated_node: Param
@@ -456,7 +464,7 @@ class RemoveWhitespaceTransformer(PythonModuleTransformer):
                 elif isinstance(whitespace, ParenthesizedWhitespace):
                     if (whitespace.first_line.comment is None and
                             all(map(lambda x: x.comment is None, whitespace.empty_lines))):
-                        whitespace = SimpleWhitespace(value='')
+                        whitespace = SimpleWhitespace(value=' ' if semantic else '')
                     else:
                         if whitespace.first_line.comment is not None:
                             # keep trailing whitespace because of comment
@@ -478,7 +486,7 @@ class RemoveWhitespaceTransformer(PythonModuleTransformer):
                                 if line.comment is not None
                             ],
                             last_line=SimpleWhitespace(
-                                value=''
+                                value=' ' if semantic else ''
                             )
                         )
                 elif MaybeSentinel.DEFAULT:

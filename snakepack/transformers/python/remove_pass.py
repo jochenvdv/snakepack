@@ -18,8 +18,8 @@ class RemovePassTransformer(PythonModuleTransformer):
                 self._necessary_pass_stmts.add(node.body[0])
 
         def visit_IndentedBlock(self, node: IndentedBlock) -> Optional[bool]:
-            if len(node.body) > 1 or not isinstance(node.body[0], SimpleStatementLine):
-                #  more than 1 statement line or it's a compound statement
+            if len(node.body) > 1 or len(node.body) == 0 or not isinstance(node.body[0], SimpleStatementLine):
+                #  more than 1 statement line or it's a compound statement or no body
                 return
 
             if len(node.body[0].body) == 1 and isinstance(node.body[0].body[0], Pass):
