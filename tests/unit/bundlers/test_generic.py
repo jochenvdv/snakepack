@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from snakepack.assets import Asset, AssetContent
+from snakepack.assets import Asset, AssetContent, AssetGroup
 from snakepack.bundlers import Bundle
 from snakepack.bundlers.generic import FileBundler
 from snakepack.config import GlobalOptions
@@ -44,8 +44,10 @@ class FileBundlerTest:
         asset2.full_name = 'somepackage.asset2'
 
         assets = [asset1, asset2]
+        asset_group = mocker.MagicMock(spec=AssetGroup)
+        asset_group.deep_assets = assets
         bundle = mocker.MagicMock(spec=Bundle)
-        bundle.assets = assets
+        bundle.asset_group = asset_group
 
         bundler.bundle(bundle, package=package)
 

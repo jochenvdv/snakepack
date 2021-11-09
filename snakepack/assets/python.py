@@ -11,7 +11,7 @@ from snakepack.assets import (
     AssetGroup,
     AssetType
 )
-
+from snakepack.assets._base import T
 
 Python = AssetType.create('Python')
 
@@ -68,35 +68,32 @@ class PythonPackage(AssetGroup[Python]):
         return self._name
 
     @property
-    def modules(self) -> Iterable[PythonModule]:
-        return self._modules
-
-    @property
-    def subpackages(self) -> Iterable[PythonPackage]:
-        return self._subpackages
-
-    @property
     def init_module(self) -> PythonModule:
         return self._init_module
 
     @property
     def assets(self) -> Iterable[Asset[Python]]:
+        return self._modules
+
+    @property
+    def deep_assets(self) -> Iterable[Asset[T]]:
         return [
             *self._modules,
             *flatten(
-                subpackage.assets for subpackage in self._subpackages
+                subpackage.deep_assets for subpackage in self._subpackages
             )
         ]
 
+    @property
+    def subgroups(self) -> Iterable[AssetGroup[T]]:
+        return self._subpackages
+
 
 class PythonApplication(AssetGroup[Python]):
-    def __init__(self, entry_point: PythonModule, modules: Iterable[PythonModule]):
+    def __init__(self, entry_point: PythonModule, packages: Iterable[PythonPackage], modules: Iterable[PythonModule]):
         self._entry_point = entry_point
+        self._packages = packages
         self._modules = modules
-
-    @property
-    def modules(self) -> Iterable[PythonModule]:
-        return self._modules
 
     @property
     def entry_point(self) -> PythonModule:
@@ -105,3 +102,16 @@ class PythonApplication(AssetGroup[Python]):
     @property
     def assets(self) -> Iterable[Asset[Python]]:
         return self._modules
+
+    @property
+    def deep_assets(self) -> Iterable[Asset[T]]:
+        return [
+            *self._modules,
+            *flatten(
+                package.deep_assets for package in self._packages
+            )
+        ]
+
+    @property
+    def subgroups(self) -> Iterable[AssetGroup[T]]:
+        return self._packages

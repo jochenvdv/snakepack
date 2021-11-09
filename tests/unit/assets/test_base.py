@@ -1,9 +1,12 @@
+from typing import Iterable
+
 from snakepack.assets import (
     AssetType,
     Asset,
     AssetContent,
     StringAssetContent, AssetGroup, AssetContentSource, FileContentSource, AssetContentCache
 )
+from snakepack.assets._base import T
 
 
 class AssetTypeTest:
@@ -19,13 +22,13 @@ class AssetTest:
 
     def test_init(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        asset = self.TestAsset(content=content)
+        asset = self.TestAsset(content=content, source=None)
 
         assert asset.content is content
 
     def test_content_setter(self, mocker):
         orig_content = mocker.MagicMock(spec=AssetContent)
-        asset = self.TestAsset(content=orig_content)
+        asset = self.TestAsset(content=orig_content, source=None)
 
         new_content = mocker.MagicMock(spec=AssetContent)
         asset.content = new_content
@@ -77,6 +80,14 @@ class AssetGroupTest:
         @property
         def assets(self):
             return self._assets
+
+        @property
+        def deep_assets(self) -> Iterable[Asset[T]]:
+            return self._assets
+
+        @property
+        def subgroups(self) -> Iterable[AssetGroup[T]]:
+            return []
 
     def test_init(self):
         group = self.TestAssetGroup(assets=[])

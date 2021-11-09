@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Iterable, Sequence, Optional
 
-from snakepack.assets import Asset
+from snakepack.assets import Asset, AssetGroup
 from snakepack.config import ConfigurableComponent
 from snakepack.loaders import Loader
 from snakepack.transformers import Transformer
@@ -14,7 +14,7 @@ class Bundle:
         self._name = name
         self._bundler = bundler
         self._loader = loader
-        self._assets: Optional[Iterable[Asset]] = None
+        self._asset_group: Optional[AssetGroup] = None
         self._transformers = transformers
 
     @property
@@ -30,15 +30,15 @@ class Bundle:
         return self._loader
 
     @property
-    def assets(self) -> Iterable[Asset]:
-        return self._assets
+    def asset_group(self) -> AssetGroup:
+        return self._asset_group
 
     @property
     def transformers(self) -> Sequence[Transformer]:
         return self._transformers
 
     def load(self):
-        self._assets = self._loader.load()
+        self._asset_group = self._loader.load()
 
     def bundle(self, *args, **kwargs):
         return self._bundler.bundle(self, *args, **kwargs)

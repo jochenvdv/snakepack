@@ -7,7 +7,7 @@ from snakepack.packagers import Package
 
 class FileBundler(Bundler):
     def bundle(self, bundle: Bundle, package: Package):
-        for asset in bundle.assets:
+        for asset in bundle.asset_group.deep_assets:
             bundle_name = asset.full_name.replace('.', '/')
             output_path = package.target_path / Path(self._options.output_path.format(bundle_name=bundle_name))
             output_path.parent.mkdir(parents=True, exist_ok=True)

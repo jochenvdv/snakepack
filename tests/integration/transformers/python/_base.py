@@ -11,7 +11,7 @@ from snakepack.transformers import Transformer
 class PythonModuleCstTransformerIntegrationTestBase:
     def _test_transformation(self, transformer: Transformer, input: AssetContent, expected_output: AssetContent, analyzers: Optional[Iterable[Analyzer]] = None):
         # analysis
-        subject = PythonModule(full_name='test', content=input)
+        subject = PythonModule(full_name='test', content=input, source=None)
         analyses = {}
 
         if analyzers is not None:
@@ -37,7 +37,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
             pytest.fail('Transformer output contains syntax errors')
 
         # second transformation on original input
-        subject = PythonModule(full_name='test', content=input)
+        subject = PythonModule(full_name='test', content=input, source=None)
 
         if analyzers is not None:
             for analyzer in analyzers:
@@ -48,7 +48,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
         assert str(output_second_pass.content) == str(output_first_pass.content), 'Transformer isn\'t idempotent'
 
         # second transformation on output of initial transformation
-        subject = PythonModule(full_name='test', content=output_second_pass.content)
+        subject = PythonModule(full_name='test', content=output_second_pass.content, source=None)
 
         if analyzers is not None:
             for analyzer in analyzers:

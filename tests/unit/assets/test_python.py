@@ -13,7 +13,7 @@ class PythonTest:
 class PythonModuleTest:
     def test_init(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content)
+        module = PythonModule(full_name='some.test.module', content=content, source=None)
 
         assert module.full_name == 'some.test.module'
         assert module.name == 'module'
@@ -54,10 +54,10 @@ class PythonPackageTest:
 
         assert package.full_name == 'mypackage'
         assert package.name == 'mypackage'
-        assert package.subpackages == subpackages
-        assert package.modules == modules
-        assert package.init_module is init_module
+        assert package.subgroups == subpackages
         assert package.assets == modules
+        assert package.init_module is init_module
+        assert package.deep_assets == modules
 
     def test_init_with_subpackages(self, mocker):
         sub_init_module = mocker.MagicMock(spec=PythonModule)
@@ -82,10 +82,10 @@ class PythonPackageTest:
 
         assert package.full_name == 'mypackage'
         assert package.name == 'mypackage'
-        assert package.subpackages == subpackages
-        assert package.modules == modules
+        assert package.subgroups == subpackages
+        assert package.assets == modules
         assert package.init_module is init_module
-        assert package.assets == [
+        assert package.deep_assets == [
             *modules,
             *sub_modules
         ]
@@ -98,8 +98,9 @@ class PythonApplicationTest:
         module2 = mocker.MagicMock(spec=PythonModule)
         modules = [entry_module, module1, module2]
 
-        application = PythonApplication(entry_point=entry_module, modules=modules)
+        application = PythonApplication(entry_point=entry_module, modules=modules, packages={})
 
         assert application.entry_point is entry_module
-        assert application.modules == modules
         assert application.assets == modules
+        assert application.deep_assets == modules
+        assert application.subgroups == {}

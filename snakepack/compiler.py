@@ -49,7 +49,7 @@ class Compiler:
     def _transform_assets(self):
         for package in self._packages:
             for bundle in package.bundles.values():
-                for asset in bundle.assets:
+                for asset in bundle.asset_group.deep_assets:
                     asset.content[PythonModuleCst]
                     for transformer in bundle.transformers:
                         transformer.transform(analyses={}, subject=asset)

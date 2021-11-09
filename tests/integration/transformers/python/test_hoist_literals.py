@@ -1,5 +1,6 @@
 from textwrap import dedent
 
+import pytest
 from libcst import parse_module
 
 from snakepack.analyzers.python.literals import LiteralDuplicationAnalyzer
@@ -10,6 +11,7 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RemovePassTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+    @pytest.mark.skip
     def test_transform(self):
         input_content = PythonModuleCst(
             cst=parse_module(

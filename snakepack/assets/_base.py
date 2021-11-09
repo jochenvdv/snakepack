@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from abc import abstractmethod, ABC
-from typing import TypeVar, Protocol, Optional, Union, Generic, Type, Any
+from pathlib import Path
+from typing import TypeVar, Protocol, Optional, Union, Generic, Type, Any, Iterable
 
 
 class AssetType(ABC):
@@ -19,8 +20,9 @@ T = TypeVar('T', bound=AssetType)
 
 
 class Asset(Generic[T], ABC):
-    def __init__(self, content: AssetContent[Asset[T]]):
+    def __init__(self, content: AssetContent[Asset[T]], source: AssetContentSource):
         self._content = content
+        self._source = source
 
     @property
     def content(self) -> AssetContent[Asset[T]]:
@@ -30,19 +32,37 @@ class Asset(Generic[T], ABC):
     def content(self, content: AssetContent[Asset[T]]):
         self._content = content
 
+    @property
+    def source(self) -> AssetContentSource:
+        return self._source
+
+    @property
+    def extension(self):
+        raise NotImplementedError
+
     @classmethod
     def from_string(cls, string: str) -> Asset[T]:
-        return cls(content=StringAssetContent(string))
+        return cls(content=StringAssetContent(string), source=None)
 
     @classmethod
     def from_source(cls, source: AssetContentSource, **kwargs):
-        return cls(content=AssetContentCache(content_or_source=source), **kwargs)
+        return cls(content=AssetContentCache(content_or_source=source), source=source, **kwargs)
 
 
-class AssetGroup(Generic[T]):
+class AssetGroup(Generic[T], ABC):
     @property
     @abstractmethod
-    def assets(self):
+    def assets(self) -> Iterable[Asset[T]]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def deep_assets(self) -> Iterable[Asset[T]]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def subgroups(self) -> Iterable[AssetGroup[T]]:
         raise NotImplementedError
 
 
@@ -92,6 +112,10 @@ class RuntimeContentSource(AssetContentSource):
 class FileContentSource(AssetContentSource):
     def __init__(self, path):
         self._path = path
+
+    @property
+    def path(self) -> Path:
+        return self._path
 
     def load(self) -> StringAssetContent:
         with open(self._path) as f:
