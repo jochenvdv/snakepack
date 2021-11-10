@@ -19,7 +19,7 @@ class NameRegistryTest:
         ]
 
         for i in range(200):
-            name = registry.register_name_for_scope(scope=scope)
+            name = registry.generate_name_for_scope(scope=scope)
             assert not name.startswith(string.digits)
 
             if i < 52:
@@ -28,3 +28,14 @@ class NameRegistryTest:
                 assert name == 'a2'
             elif i == 176:
                 assert name == 'cd'
+
+            registry.register_name_for_scope(scope=scope, name=name)
+
+    def test_generate_name_and_dont_use(self, mocker):
+        registry = NameRegistry()
+        scope = mocker.MagicMock(spec=Scope)
+
+        name = registry.generate_name_for_scope(scope=scope)
+        second_name = registry.generate_name_for_scope(scope=scope)
+
+        assert name == second_name

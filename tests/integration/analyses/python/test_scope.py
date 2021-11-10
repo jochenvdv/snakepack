@@ -7,7 +7,7 @@ from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst, PythonModule
 
 
-class ScopeAnalysisIntegrationTest:
+class ScopeAnalyzerIntegrationTest:
     def test_analyze(self):
         content = PythonModuleCst(
             cst=parse_module(
