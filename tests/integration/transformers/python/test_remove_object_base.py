@@ -2,6 +2,7 @@ from textwrap import dedent
 
 from libcst import parse_module
 
+from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
 from snakepack.config.model import GlobalOptions
 from snakepack.transformers.python.remove_object_base import RemoveObjectBaseTransformer
@@ -37,4 +38,9 @@ class RemoveObjectBaseTransformerIntegrationTest(PythonModuleCstTransformerInteg
         global_options = GlobalOptions()
         transformer = RemoveObjectBaseTransformer(global_options=global_options)
 
-        self._test_transformation(transformer=transformer, input=input_content, expected_output=expected_output_content)
+        self._test_transformation(
+            transformer=transformer,
+            input=input_content,
+            expected_output=expected_output_content,
+            analyzers=[ScopeAnalyzer()]
+        )

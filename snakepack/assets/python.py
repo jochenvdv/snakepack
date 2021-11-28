@@ -40,7 +40,7 @@ class PythonModule(Asset[Python]):
         if not isinstance(selector, FullyQualifiedPythonName):
             return False
 
-        return not selector.has_module_path or '.'.join(selector.module_path) == self._full_name
+        return not selector.has_module_path or selector.has_ident_path or '.'.join(selector.module_path) == self._full_name
 
 
 class PythonModuleCst(AssetContent[PythonModule]):

@@ -54,7 +54,11 @@ class Compiler:
                     asset.content[PythonModuleCst]
                     for transformer in bundle.transformers:
                         if not any(map(lambda x: asset.matches(x), transformer.options.excludes)):
-                            transformer.transform(analyses={}, subject=asset)
+                            analyses = {
+                                analyzer: analyzer().analyse(asset)
+                                for analyzer in transformer.REQUIRED_ANALYZERS
+                            }
+                            transformer.transform(analyses=analyses, subject=asset)
 
     def _package_assets(self):
         for package in self._packages:

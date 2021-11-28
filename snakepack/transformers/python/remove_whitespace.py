@@ -539,13 +539,14 @@ class RemoveWhitespaceTransformer(PythonModuleTransformer):
                 if isinstance(statement, SimpleStatementLine):
                     if not all(map(lambda x: x.comment is None, statement.leading_lines)):
                         # need to merge previous lines because this statement contains leading comments
-                        updated_body.append(
-                            cls._merge_statement_lines(
-                                lines=collapse_queue,
-                                leading_lines=leading_lines,
-                                trailing_whitespace=statement.trailing_whitespace
+                        if len(collapse_queue) > 0:
+                            updated_body.append(
+                                cls._merge_statement_lines(
+                                    lines=collapse_queue,
+                                    leading_lines=leading_lines,
+                                    trailing_whitespace=statement.trailing_whitespace
+                                )
                             )
-                        )
 
                         if statement.trailing_whitespace.comment is not None:
                             # can't collapse with following statement because of trailing whitespace

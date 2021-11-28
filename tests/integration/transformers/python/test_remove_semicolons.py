@@ -2,6 +2,7 @@ from textwrap import dedent
 
 from libcst import parse_module
 
+from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
 from snakepack.config.model import GlobalOptions
 from snakepack.transformers.python.remove_semicolons import RemoveSemicolonsTransformer
@@ -39,4 +40,9 @@ class RemoveSemicolonsTransformerIntegrationTest(PythonModuleCstTransformerInteg
         global_options = GlobalOptions()
         transformer = RemoveSemicolonsTransformer(global_options=global_options)
 
-        self._test_transformation(transformer=transformer, input=input_content, expected_output=expected_output_content)
+        self._test_transformation(
+            transformer=transformer,
+            input=input_content,
+            expected_output=expected_output_content,
+            analyzers=[ScopeAnalyzer()]
+        )

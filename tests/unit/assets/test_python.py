@@ -34,6 +34,7 @@ class PythonModuleTest:
         module = PythonModule(full_name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = False
+        selector.has_ident_path = False
 
         assert module.matches(selector)
 
@@ -42,6 +43,7 @@ class PythonModuleTest:
         module = PythonModule(full_name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
+        selector.has_ident_path = False
         selector.module_path = ['some', 'test']
 
         assert not module.matches(selector)
@@ -51,6 +53,17 @@ class PythonModuleTest:
         module = PythonModule(full_name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
+        selector.has_ident_path = False
+        selector.module_path = ['some', 'test', 'othermodule']
+
+        assert not module.matches(selector)
+
+    def test_matches_returns_false_when_selector_is_identifier(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        module = PythonModule(full_name='some.test.module:some_ident', content=content, source=None)
+        selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
+        selector.has_module_path = True
+        selector.has_ident_path = False
         selector.module_path = ['some', 'test', 'othermodule']
 
         assert not module.matches(selector)

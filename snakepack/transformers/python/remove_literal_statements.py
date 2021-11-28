@@ -4,10 +4,15 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
     MaybeSentinel, FunctionDef, SimpleStatementSuite, IndentedBlock, Pass, BaseSmallStatement, Expr, Integer, BaseSuite, \
     BaseNumber, BaseString, Tuple, BaseList, BaseSet, BaseDict
 
+from snakepack.analyzers.python.literals import LiteralDuplicationAnalyzer
 from snakepack.transformers.python._base import PythonModuleTransformer
 
 
 class RemoveLiteralStatementsTransformer(PythonModuleTransformer):
+    REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
+        LiteralDuplicationAnalyzer
+    ]
+
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_SimpleStatementSuite(
                 self,

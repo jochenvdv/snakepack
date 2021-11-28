@@ -7,6 +7,8 @@ from snakepack.config.options import ConfigurableComponent
 
 
 class Transformer(ConfigurableComponent, ABC):
+    REQUIRED_ANALYZERS = []
+
     @abstractmethod
     def transform(
             self,
