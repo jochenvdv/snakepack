@@ -12,7 +12,7 @@ from stdlib_list import stdlib_list
 
 from snakepack.assets._base import FileContentSource
 from snakepack.assets.python import PythonModule, PythonApplication, PythonPackage
-from snakepack.config import Options
+from snakepack.config.options import Options
 from snakepack.loaders import Loader
 
 

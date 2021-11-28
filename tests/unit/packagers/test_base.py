@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from snakepack.bundlers import Bundle
-from snakepack.config import Options, GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.packagers import Packager, Package
 
 

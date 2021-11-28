@@ -2,9 +2,30 @@ from __future__ import annotations
 
 import re
 import sys
+from abc import ABC
 from enum import Enum, unique
 from typing import Sequence, Optional, Match, Union
 
+
+class Selector(ABC, str):
+    REGEX = NotImplemented
+    _selector_types = set()
+
+    @classmethod
+    def __init_subclass__(cls, **kwargs):
+        Selector._selector_types.add(cls)
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value):
+        for selector_type in cls._selector_types:
+            if selector_type.REGEX.fullmatch(value):
+                return selector_type(value)
+
+        raise ValueError(f"Invalid selector '{value}'")
 
 @unique
 class PythonVersion(Enum):
@@ -17,16 +38,16 @@ class PythonVersion(Enum):
         return PythonVersion(f'{sys.version_info[0]}.{sys.version_info[1]}')
 
 
-class FullyQualifiedPythonName(str):
-    _MODULE_NAME_REGEX = r'([a-z0-9_]+)(\.[a-z0-9_]+)*'
-    _IDENTIFIER_NAME_REGEX = r'([a-z_][a-z0-9_]*)(\.[a-z_][a-z0-9_]*)*'
+class FullyQualifiedPythonName(Selector):
+    _MODULE_NAME_REGEX = r'([a-zA-Z0-9_]+)(\.[a-zA-Z0-9_]+)*'
+    _IDENTIFIER_NAME_REGEX = r'([a-zA-Z_][a-zA-Z0-9_]*)(\.[a-zA-Z_][a-zA-Z0-9_]*)*'
 
-    _REGEX = re.compile(
+    REGEX = re.compile(
         rf'^(?P<module_path>{_MODULE_NAME_REGEX})(:(?P<ident_path>{_IDENTIFIER_NAME_REGEX}))?$'
     )
 
     def __new__(cls, value: Union[str, Match]):
-        match = cls._REGEX.fullmatch(value)
+        match = cls.REGEX.fullmatch(value)
 
         if not match:
             raise ValueError('Invalid fully qualified python name')

@@ -4,7 +4,7 @@ from libcst import parse_module
 
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.transformers.python.rename_identifiers import RenameIdentifiersTransformer
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 

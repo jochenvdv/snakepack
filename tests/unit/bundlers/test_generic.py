@@ -4,7 +4,7 @@ from pathlib import Path
 from snakepack.assets import Asset, AssetContent, AssetGroup
 from snakepack.bundlers import Bundle
 from snakepack.bundlers.generic import FileBundler
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.packagers import Package
 
 

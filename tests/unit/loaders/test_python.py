@@ -1,8 +1,4 @@
-from pathlib import Path
-
-import pytest
-
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.loaders.python import ImportGraphLoader
 
 

@@ -5,7 +5,7 @@ from libcst import CSTTransformer
 from snakepack.analyzers import Analyzer
 from snakepack.assets import AssetContent, AssetGroup
 from snakepack.assets.python import PythonModuleCst, PythonModule, Python
-from snakepack.config import Options
+from snakepack.config.options import Options
 from snakepack.transformers import Transformer
 
 

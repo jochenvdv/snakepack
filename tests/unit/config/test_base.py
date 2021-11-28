@@ -1,7 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from snakepack.config import Options, ComponentConfig, ConfigurableComponent, ConfigException, GlobalOptions
+from snakepack.config.options import Options, ComponentConfig, ConfigurableComponent
+from snakepack.config.model import GlobalOptions
 
 
 class ConfigurableComponentTest:

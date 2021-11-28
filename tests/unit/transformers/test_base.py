@@ -1,5 +1,5 @@
 from snakepack.assets import Asset
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.transformers import Transformer
 
 

@@ -34,6 +34,9 @@ class FullyQualifiedPythonNameTest:
         assert fqn.has_module_path
         assert fqn.has_ident_path
 
+    def test_uppercase(self):
+        fqn = FullyQualifiedPythonName('Somekg.config.model:SnakepackConfig')
+
     def test_full_nested_deep(self):
         fqn = FullyQualifiedPythonName('bigpkg.pkg.module:class.attr.anattr')
 

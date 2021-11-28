@@ -12,11 +12,17 @@ from snakepack.assets import (
     AssetType
 )
 from snakepack.assets._base import T
+from snakepack.config.options import Selectable, Selector
+from snakepack.config.types import FullyQualifiedPythonName
 
 Python = AssetType.create('Python')
 
 
 class PythonModule(Asset[Python]):
+    @property
+    def extension(self):
+        return '.py'
+
     def __init__(self, full_name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._full_name = full_name
@@ -29,6 +35,12 @@ class PythonModule(Asset[Python]):
     @property
     def name(self) -> str:
         return self._name
+
+    def matches(self, selector: Selector) -> bool:
+        if not isinstance(selector, FullyQualifiedPythonName):
+            return False
+
+        return not selector.has_module_path or '.'.join(selector.module_path) == self._full_name
 
 
 class PythonModuleCst(AssetContent[PythonModule]):

@@ -3,7 +3,7 @@ from libcst import Module
 
 from snakepack.assets import Asset
 from snakepack.assets.python import PythonModuleCst
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer
 
 

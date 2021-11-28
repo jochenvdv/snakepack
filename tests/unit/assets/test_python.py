@@ -3,6 +3,7 @@ from libcst import Module
 
 from snakepack.assets import AssetType, AssetContent
 from snakepack.assets.python import Python, PythonModule, PythonModuleCst, PythonPackage, PythonApplication
+from snakepack.config.types import FullyQualifiedPythonName
 
 
 class PythonTest:
@@ -18,6 +19,41 @@ class PythonModuleTest:
         assert module.full_name == 'some.test.module'
         assert module.name == 'module'
         assert module.content is content
+
+    def test_matches_returns_true_when_selector_is_full_module_name(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
+        selector.has_module_path = True
+        selector.module_path = ['some', 'test', 'module']
+
+        assert module.matches(selector)
+
+    def test_matches_returns_true_when_selector_is_identifier(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
+        selector.has_module_path = False
+
+        assert module.matches(selector)
+
+    def test_matches_returns_false_when_selector_is_package(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
+        selector.has_module_path = True
+        selector.module_path = ['some', 'test']
+
+        assert not module.matches(selector)
+
+    def test_matches_returns_false_when_selector_is_other_module(self, mocker):
+        content = mocker.MagicMock(spec=AssetContent)
+        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
+        selector.has_module_path = True
+        selector.module_path = ['some', 'test', 'othermodule']
+
+        assert not module.matches(selector)
 
 
 class PythonModuleCstTest:
@@ -89,7 +125,6 @@ class PythonPackageTest:
             *modules,
             *sub_modules
         ]
-
 
 class PythonApplicationTest:
     def test_init(self, mocker):

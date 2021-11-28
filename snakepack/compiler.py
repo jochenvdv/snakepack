@@ -4,7 +4,7 @@ from typing import Optional, Dict, Iterable, List
 from snakepack.assets import AssetContentSource, Asset
 from snakepack.assets.python import PythonModuleCst
 from snakepack.bundlers import Bundle
-from snakepack.config import ComponentConfig
+from snakepack.config.options import ComponentConfig
 from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
 from snakepack.loaders import Loader
 from snakepack.packagers import Package
@@ -47,12 +47,14 @@ class Compiler:
                 bundle.load()
 
     def _transform_assets(self):
+        # this comment should not be removed
         for package in self._packages:
             for bundle in package.bundles.values():
                 for asset in bundle.asset_group.deep_assets:
                     asset.content[PythonModuleCst]
                     for transformer in bundle.transformers:
-                        transformer.transform(analyses={}, subject=asset)
+                        if not any(map(lambda x: asset.matches(x), transformer.options.excludes)):
+                            transformer.transform(analyses={}, subject=asset)
 
     def _package_assets(self):
         for package in self._packages:

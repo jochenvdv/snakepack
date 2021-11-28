@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from snakepack.config import Options
+from snakepack.config.options import Options
 from snakepack.packagers import Packager, Package
 
 

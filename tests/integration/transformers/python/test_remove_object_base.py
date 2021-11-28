@@ -3,7 +3,7 @@ from textwrap import dedent
 from libcst import parse_module
 
 from snakepack.assets.python import PythonModuleCst
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.transformers.python.remove_object_base import RemoveObjectBaseTransformer
 from tests.integration.transformers.python._base import PythonModuleCstTransformerIntegrationTestBase
 

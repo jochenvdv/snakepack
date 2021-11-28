@@ -4,6 +4,8 @@ from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import TypeVar, Protocol, Optional, Union, Generic, Type, Any, Iterable
 
+from snakepack.config.options import Selectable
+
 
 class AssetType(ABC):
     @abstractmethod
@@ -19,7 +21,7 @@ class AssetType(ABC):
 T = TypeVar('T', bound=AssetType)
 
 
-class Asset(Generic[T], ABC):
+class Asset(Generic[T], Selectable, ABC):
     def __init__(self, content: AssetContent[Asset[T]], source: AssetContentSource):
         self._content = content
         self._source = source

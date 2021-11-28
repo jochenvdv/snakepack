@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterable, Dict, Optional
 
 from snakepack.bundlers import Bundle
-from snakepack.config import Options, ConfigurableComponent
+from snakepack.config.options import Options, ConfigurableComponent
 
 
 class Package:

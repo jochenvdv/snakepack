@@ -1,7 +1,7 @@
 from snakepack.assets import Asset
 from snakepack.bundlers import Bundle
 from snakepack.bundlers._base import Bundler
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.loaders import Loader
 from snakepack.transformers import Transformer
 

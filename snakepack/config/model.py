@@ -6,11 +6,17 @@ from typing import Mapping, Union, TypeVar, Generic, Iterable, Sequence
 from pydantic import BaseModel
 
 from snakepack.bundlers import Bundler, Bundle
-from snakepack.config import ComponentConfig, GlobalOptions
+from snakepack.config.options import ComponentConfig
 from snakepack.config.types import PythonVersion
 from snakepack.loaders import Loader
 from snakepack.packagers import Packager, Package
 from snakepack.transformers import Transformer
+
+
+class GlobalOptions(BaseModel):
+    source_base_path: Path = Path('./')
+    target_base_path: Path = Path('dist/')
+    target_version: PythonVersion = PythonVersion.current()
 
 
 class BundleConfig(BaseModel):

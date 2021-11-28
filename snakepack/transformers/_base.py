@@ -3,7 +3,7 @@ from typing import Type, Mapping, Union
 
 from snakepack.analyzers import Analyzer
 from snakepack.assets import Asset, AssetContent, AssetGroup
-from snakepack.config import ConfigurableComponent
+from snakepack.config.options import ConfigurableComponent
 
 
 class Transformer(ConfigurableComponent, ABC):

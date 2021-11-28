@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Sequence, Optional
 
 from snakepack.assets import Asset, AssetGroup
-from snakepack.config import ConfigurableComponent
+from snakepack.config.options import ConfigurableComponent
 from snakepack.loaders import Loader
 from snakepack.transformers import Transformer
 

@@ -2,7 +2,7 @@ from typing import Mapping
 
 from snakepack.assets import Asset
 from snakepack.assets._base import AssetContentSource
-from snakepack.config import GlobalOptions
+from snakepack.config.model import GlobalOptions
 from snakepack.loaders import Loader
 
 
