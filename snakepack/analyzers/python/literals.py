@@ -126,3 +126,5 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
                             (not isinstance(value, SimpleString) or value.value != literal_value))):
                         # invalidate because re-assignment to identifier with another value
                         del self._literal_assignments[literal_value][name.value]
+
+    __config_name__ = 'literal_duplication'

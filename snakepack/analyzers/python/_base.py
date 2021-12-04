@@ -16,3 +16,5 @@ class PythonModuleCstAnalyzer(Analyzer, ABC):
         def __getitem__(self, item):
             return self._modules_metadata[item]
 
+    __config_name__ = NotImplemented
+

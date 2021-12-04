@@ -1,5 +1,8 @@
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
 from collections import namedtuple
-from typing import Optional, Dict, Iterable, List
+from typing import Optional, Dict, Iterable, List, Callable, TypeVar
 
 from snakepack.assets import AssetContentSource, Asset
 from snakepack.assets.python import PythonModuleCst
@@ -12,9 +15,10 @@ from snakepack.transformers import Transformer
 
 
 class Compiler:
-    def __init__(self, config: SnakepackConfig):
+    def __init__(self, config: SnakepackConfig, executor: Executor):
         self._config = config
         self._packages: List[Package] = []
+        self._executor = executor
 
     def run(self):
         self._load_packages()
@@ -55,11 +59,31 @@ class Compiler:
                     for transformer in bundle.transformers:
                         if not any(map(lambda x: asset.matches(x), transformer.options.excludes)):
                             analyses = {
-                                analyzer: analyzer().analyse(asset)
+                                analyzer: self._executor.execute(
+                                    task_name=f"Running '{analyzer.__config_name__}' analyzer on asset '{asset.full_name}'",
+                                    task=lambda: analyzer().analyse(subject=asset)
+                                )
                                 for analyzer in transformer.REQUIRED_ANALYZERS
                             }
-                            transformer.transform(analyses=analyses, subject=asset)
+                            self._executor.execute(
+                                task_name=f"Applying '{transformer.__config_name__}' transformer to asset '{asset.full_name}'",
+                                task=lambda: transformer.transform(analyses=analyses, subject=asset)
+                            )
 
     def _package_assets(self):
         for package in self._packages:
             package.package()
+
+
+T = TypeVar('T')
+
+
+class Executor(ABC):
+    @abstractmethod
+    def execute(self, task_name: str, task: Callable[..., T]):
+        raise NotImplemented
+
+
+class SynchronousExecutor(Executor):
+    def execute(self, task_name: str, task: Callable[..., T]):
+        return task()

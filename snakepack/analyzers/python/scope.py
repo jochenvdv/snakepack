@@ -39,6 +39,8 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
                 )
             )
 
+    __config_name__ = 'scope'
+
 
 class Identifier(Selectable):
     def __init__(self, name: str, scopes: List[Scope]):
