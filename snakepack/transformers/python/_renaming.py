@@ -32,6 +32,9 @@ class NameRegistry:
         self._registered_names[scope].add(name)
         self._scopes[scope] = self._generate_identifiers()
 
+    def reset(self, scope: Scope):
+        self._scopes[scope] = self._generate_identifiers()
+
     def _generate_identifiers(self):
         first_chars = string.ascii_letters
         chars = first_chars + string.digits

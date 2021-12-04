@@ -42,11 +42,9 @@ class LiteralDuplicationAnalyzerIntegrationTest:
         foo_node = content.cst.body[0].body[0].value
         foo_assignments = analysis.get_preceding_assignments(module, foo_node)
 
-        assert len(foo_assignments) == 2
+        assert len(foo_assignments) == 1
         assert 'a' in foo_assignments
         assert len(foo_assignments['a']) == 1
-        assert 'd' in foo_assignments
-        assert len(foo_assignments['d']) == 1
 
         bar_node = content.cst.body[9].body[0].value
         bar_assignments = analysis.get_preceding_assignments(module, bar_node)

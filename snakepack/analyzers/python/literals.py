@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union, Optional, Tuple, Dict, Iterable, Sequence, List
+from typing import Union, Optional, Tuple, Dict, Iterable, Sequence, List, Set
 
 from boltons.iterutils import first, flatten
 from libcst import MetadataWrapper, Assign, AnnAssign, SimpleString, VisitorMetadataProvider, AugAssign, Name, \
@@ -74,6 +74,10 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._literal_assignments: Dict[str, Dict[str, List[Union[Assign, AnnAssign, AugAssign]]]] = {}
+            self._literals_referenced: Set[str] = set()
+
+        def visit_SimpleString(self, node: SimpleString) -> Optional[bool]:
+            self._literals_referenced.add(node.value)
 
         def visit_Assign(self, node: Assign) -> Optional[bool]:
             if isinstance(node.value, SimpleString):
@@ -96,6 +100,9 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
             self._invalidate_previous_assignments(node.target, node.value, node)
 
         def _track_assignment_for_literal(self, literal: SimpleString, name: Name, node: Union[Assign, AnnAssign, AugAssign]):
+            if literal.value in self._literals_referenced:
+                # don't track assignment as it follows after a reference
+                return
             if literal.value not in self._literal_assignments:
                 self._literal_assignments[literal.value] = {}
 

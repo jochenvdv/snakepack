@@ -53,6 +53,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
                 if non_hoisted_char_count <= hoisted_char_count:
                     # don't hoist because no size reduction
+                    self._name_registry.reset(scope=scope)
                     return updated_node
 
                 if updated_node.value not in self._hoisted_literals:
