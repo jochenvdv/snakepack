@@ -3,7 +3,8 @@ from typing import Optional, Union, Dict, Tuple, Mapping, Type
 from boltons.iterutils import first, flatten
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, ClassDef, Name, CSTNode, Expr, BaseString, SimpleString, BaseExpression, Module, Assign, \
-    AssignTarget, SimpleWhitespace
+    AssignTarget, SimpleWhitespace, ConcatenatedString
+from libcst.metadata import ParentNodeProvider
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.literals import LiteralDuplicationAnalyzer
@@ -15,13 +16,23 @@ from snakepack.transformers.python._renaming import NameRegistry
 
 
 class HoistLiteralsTransformer(PythonModuleTransformer):
+    REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
+        LiteralDuplicationAnalyzer
+    ]
+
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
+        METADATA_DEPENDENCIES = (ParentNodeProvider,)
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._name_registry = NameRegistry()
             self._hoisted_literals: Dict[str, Tuple[str, BaseExpression]] = {}
 
         def leave_SimpleString(self, original_node: SimpleString, updated_node: SimpleString) -> BaseExpression:
+            if self._analyses[LiteralDuplicationAnalyzer].is_part_of_concatenated_string(self._subject, original_node):
+                # don't hoist if string is part of a concatenated string
+                return updated_node
+
             num_occurrences = self._analyses[LiteralDuplicationAnalyzer].get_num_occurrences(self._subject, original_node)
 
             if num_occurrences < 2:

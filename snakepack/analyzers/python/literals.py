@@ -4,8 +4,8 @@ from typing import Union, Optional, Tuple, Dict, Iterable, Sequence, List, Set
 
 from boltons.iterutils import first, flatten
 from libcst import MetadataWrapper, Assign, AnnAssign, SimpleString, VisitorMetadataProvider, AugAssign, Name, \
-    BaseExpression
-from libcst.metadata import ScopeProvider, ExpressionContextProvider
+    BaseExpression, ConcatenatedString
+from libcst.metadata import ScopeProvider, ExpressionContextProvider, ParentNodeProvider
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python import PythonModuleCstAnalyzer
@@ -17,6 +17,7 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
     def analyse(self, subject: Union[Asset, AssetGroup]) -> LiteralDuplicationAnalyzer.Analysis:
         if isinstance(subject, PythonModule):
             metadata = subject.content.metadata_wrapper.resolve_many([
+                ParentNodeProvider,
                 self._LiteralDuplicationCountProvider,
                 self._LiteralAssignmentProvider
             ])
@@ -35,6 +36,9 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
                 return None
 
             return self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider][literal_node]
+
+        def is_part_of_concatenated_string(self, module, literal_node: SimpleString) -> bool:
+            return isinstance(self._modules_metadata[module][ParentNodeProvider][literal_node], ConcatenatedString)
 
         def get_preceding_assignments(
                 self,

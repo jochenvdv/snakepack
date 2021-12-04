@@ -8,6 +8,7 @@ from snakepack.transformers.python.remove_pass import RemovePassTransformer
 from snakepack.transformers.python.remove_semicolons import RemoveSemicolonsTransformer
 from snakepack.transformers.python.remove_whitespace import RemoveWhitespaceTransformer
 from snakepack.transformers.python.rename_identifiers import RenameIdentifiersTransformer
+from snakepack.transformers.python.hoist_literals import HoistLiteralsTransformer
 
 __all__ = [
     RemoveCommentsTransformer,
@@ -19,5 +20,6 @@ __all__ = [
     RemoveParameterSeparatorsTransformer,
     RemovePassTransformer,
     RemoveSemicolonsTransformer,
-    RenameIdentifiersTransformer
+    RenameIdentifiersTransformer,
+    HoistLiteralsTransformer
 ]
