@@ -9,23 +9,28 @@ from libcst.metadata import Scope, Assignment
 class NameRegistry:
     def __init__(self):
         self._scopes: Dict[Scope, Tuple[Generator[str, None, None], Deque]] = {}
+        self._registered_names: Dict[Scope, Set[str]] = {}
 
-    def generate_name_for_scope(self, scope: Scope, exclude_existing=False) -> str:
+    def generate_name_for_scope(self, scope: Scope) -> str:
         if scope not in self._scopes:
-            self._scopes[scope] = (self._generate_identifiers(), deque())
+            self._scopes[scope] = self._generate_identifiers()
 
-        if len(self._scopes[scope][1]) > 0:
-            name = self._scopes[scope][1][-1]
-        else:
-            name = next(self._scopes[scope][0])
-            self._scopes[scope][1].appendleft(name)
+        if scope not in self._registered_names:
+            self._registered_names[scope] = set()
+
+        name = None
+
+        while name is None or name in self._registered_names[scope]:
+            name = next(self._scopes[scope])
 
         return name
 
     def register_name_for_scope(self, scope: Scope, name: str):
-        assert len(self._scopes[scope][1]) > 0
-        registered_name = self._scopes[scope][1].pop()
-        assert registered_name == name
+        if scope not in self._registered_names:
+            self._registered_names[scope] = set()
+
+        self._registered_names[scope].add(name)
+        self._scopes[scope] = self._generate_identifiers()
 
     def _generate_identifiers(self):
         first_chars = string.ascii_letters

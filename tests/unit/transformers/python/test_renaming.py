@@ -37,5 +37,7 @@ class NameRegistryTest:
 
         name = registry.generate_name_for_scope(scope=scope)
         second_name = registry.generate_name_for_scope(scope=scope)
+        registry.register_name_for_scope(scope=scope, name=second_name)
+        third_name = registry.generate_name_for_scope(scope=scope)
 
-        assert name == second_name
+        assert name == third_name

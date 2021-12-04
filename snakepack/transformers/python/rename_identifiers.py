@@ -19,7 +19,12 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             subject: Union[PythonModule, AssetGroup[Python]]
     ) -> Union[PythonModule, AssetGroup[Python]]:
         if isinstance(subject, PythonModule):
-            transformer = self._CstTransformer(subject=subject, options=self._options, analyses=analyses)
+            transformer = self._CstTransformer(
+                subject=subject,
+                options=self._options,
+                analyses=analyses,
+                transformer=self
+            )
             subject.content = PythonModuleCst(cst=subject.content.cst.visit(transformer))
 
         return subject
@@ -43,9 +48,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
                     while new_name is None or (new_name != node.value and len(scope.accesses[new_name]) > 0):
                         # generate new name that is not referenced yet in the current scope
-                        new_name = self._name_registry.register_name_for_scope(scope=scope)
+                        new_name = self._name_registry.generate_name_for_scope(scope=scope)
 
                     self._renames[node] = new_name
+                    self._name_registry.register_name_for_scope(scope=scope, name=new_name)
 
                     for access in assignment.references:
                         self._renames[access.node] = new_name

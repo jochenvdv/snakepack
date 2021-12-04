@@ -30,7 +30,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
             # check if assignment exists for this value
             scope = self._analyses[ScopeAnalyzer][self._subject][original_node]
-            assignments = self._analyses[LiteralDuplicationAnalyzer].get_assignments(self._subject, original_node)
+            assignments = self._analyses[LiteralDuplicationAnalyzer].get_preceding_assignments(self._subject, original_node)
 
             if assignments is not None and len(assignments) > 0:
                 # use existing assigned identifier
