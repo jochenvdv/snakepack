@@ -25,6 +25,12 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
                     foo('assigned', 'assigned', 'assigned')
                     bar('hello', 'hello', 'hello')
                     z = 'hello'
+                    p = 'test'
+                    def test():
+                        o = 'nope'
+                    def func(a, b):
+                        print(p)
+                        print('nope')
                     """
                 )
             )
@@ -34,7 +40,7 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
             cst=parse_module(
                 dedent(
                     """
-                    a='some_long_string'; b='r'; c='hello'
+                    a='some_long_string'; b='r'; c='hello'; d='nope'
                     foo(a, x[a])
                     bar(a)
                     foo('s', x['s'])
@@ -43,6 +49,12 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
                     foo(x, x, x)
                     bar(c, c, c)
                     z = c
+                    p = 'test'
+                    def test():
+                        o = d
+                    def func(a, b):
+                        print(p)
+                        print(d)
                     """
                 )
             )

@@ -1,5 +1,6 @@
 from textwrap import dedent
 
+import pytest
 from libcst import parse_module
 from libcst.metadata import FunctionScope
 
@@ -8,6 +9,7 @@ from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst, PythonModule
 
 
+@pytest.mark.skip
 class LiteralDuplicationAnalyzerIntegrationTest:
     def test_analyze(self):
         content = PythonModuleCst(

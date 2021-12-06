@@ -4,8 +4,8 @@ from typing import Union, Optional, Tuple, Dict, Iterable, Sequence, List, Set
 
 from boltons.iterutils import first, flatten
 from libcst import MetadataWrapper, Assign, AnnAssign, SimpleString, VisitorMetadataProvider, AugAssign, Name, \
-    BaseExpression, ConcatenatedString
-from libcst.metadata import ScopeProvider, ExpressionContextProvider, ParentNodeProvider
+    BaseExpression, ConcatenatedString, CSTNode
+from libcst.metadata import ScopeProvider, ExpressionContextProvider, ParentNodeProvider, Scope, GlobalScope
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python import PythonModuleCstAnalyzer
@@ -31,7 +31,7 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
             raise NotImplementedError
 
     class Analysis(PythonModuleCstAnalyzer.Analysis):
-        def get_num_occurrences(self, module: PythonModule, literal_node: SimpleString) -> Optional[int]:
+        def get_occurrences(self, module: PythonModule, literal_node: SimpleString) -> Optional[int]:
             if literal_node not in self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider]:
                 return None
 
@@ -43,11 +43,16 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
         def get_preceding_assignments(
                 self,
                 module: PythonModule,
-                literal_node: SimpleString
+                literal_node: SimpleString,
+                scope: Scope
         ) -> Dict[str, Sequence[Union[Assign, AnnAssign, AugAssign]]]:
             for literal, assignments in self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralAssignmentProvider].items():
                 if literal_node.value == literal.value:
-                    return assignments
+                    return {
+                        key: value
+                        for key, value in assignments.items()
+                        if key in scope
+                    }
 
             return None
 
@@ -64,7 +69,7 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
             self._literal_counts[node.value][1].append(node)
 
             for duplicated_node in self._literal_counts[node.value][1]:
-                self.set_metadata(duplicated_node, self._literal_counts[node.value][0])
+                self.set_metadata(duplicated_node, self._literal_counts[node.value][1])
 
     class _LiteralAssignmentProvider(
         VisitorMetadataProvider[

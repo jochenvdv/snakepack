@@ -33,17 +33,24 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                 # don't hoist if string is part of a concatenated string
                 return updated_node
 
-            num_occurrences = self._analyses[LiteralDuplicationAnalyzer].get_num_occurrences(self._subject, original_node)
+            occurrences = self._analyses[LiteralDuplicationAnalyzer].get_occurrences(self._subject, original_node)
 
-            if num_occurrences < 2:
+            if len(occurrences) < 2:
                 # don't hoist if only used once
                 return updated_node
 
             # check if assignment exists for this value
             scope = self._analyses[ScopeAnalyzer][self._subject][original_node]
-            assignments = self._analyses[LiteralDuplicationAnalyzer].get_preceding_assignments(self._subject, original_node)
+            assignments = self._analyses[LiteralDuplicationAnalyzer].get_preceding_assignments(
+                module=self._subject,
+                literal_node=original_node,
+                scope=scope
+            )
 
-            if assignments is not None and len(assignments) > 0:
+            if (
+                    assignments is not None and len(assignments) > 0
+                    and all(map(lambda x: self._analyses[ScopeAnalyzer][self._subject][x] is scope, occurrences))
+            ):
                 # use existing assigned identifier
                 use_existing_assignment = True
                 new_identifier = first(assignments)
@@ -56,9 +63,9 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                     new_identifier = self._hoisted_literals[updated_node.value][0]
                 else:
                     # first time calculating hoisting impact for this literal, generate new identifier
-                    new_identifier = self._name_registry.generate_name_for_scope(scope=scope)
+                    new_identifier = self._name_registry.generate_name_for_scope(scope=scope.globals)
 
-                non_hoisted_char_count = len(updated_node.value) * num_occurrences
+                non_hoisted_char_count = len(updated_node.value) * len(occurrences)
                 assign_char_count = len(updated_node.value) + 1 + len(new_identifier)
                 hoisted_char_count = assign_char_count + (2 * len(new_identifier))
 
@@ -76,8 +83,12 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                 self._hoisted_literals[updated_node.value] = new_identifier, updated_node
             else:
                 # reuse existing assignment
-                if original_node in map(lambda x: x.value, flatten(map(lambda x: x[1], assignments.items()))):
-                    # do not replace literal with a reference in the assignment itself
+
+                if (
+                        original_node in map(lambda x: x.value, flatten(map(lambda x: x[1], assignments.items())))
+                        and all(map(lambda x: self._analyses[ScopeAnalyzer][self._subject][x] is scope, occurrences))
+                ):
+                    # do not replace literal with a reference in the first in-scope assignment itself
                     return updated_node
 
             # replace the literal with reference to a variable
