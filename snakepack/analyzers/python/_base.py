@@ -1,4 +1,6 @@
-from abc import ABC
+from __future__  import annotations
+
+from abc import ABC, abstractmethod
 from typing import Union, Mapping
 
 from libcst import MetadataWrapper
@@ -9,6 +11,10 @@ from snakepack.assets.python import PythonModule
 
 
 class PythonModuleCstAnalyzer(Analyzer, ABC):
+    @abstractmethod
+    def analyse(self, subject: Union[Asset, AssetGroup]) -> Analysis:
+        raise NotImplementedError
+
     class Analysis(Analyzer.Analysis):
         def __init__(self, modules_metadata: Mapping[PythonModule, MetadataWrapper]):
             self._modules_metadata = modules_metadata

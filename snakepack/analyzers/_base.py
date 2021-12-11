@@ -8,7 +8,7 @@ from snakepack.assets import Asset, AssetGroup
 
 class Analyzer(ABC):
     @abstractmethod
-    def analyse(self, subject: Union[Asset, AssetGroup]) -> Analysis:
+    def analyse(self) -> Analysis:
         raise NotImplementedError
 
     class Analysis(ABC):
