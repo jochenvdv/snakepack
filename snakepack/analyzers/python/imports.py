@@ -1,15 +1,17 @@
 import sys
 from pathlib import Path
 from site import getsitepackages
-from typing import Union, Iterable, Mapping
+from typing import Union, Iterable, Mapping, Optional
 
+from libcst import VisitorMetadataProvider, Import, ImportFrom, Module, MetadataWrapper, CSTNode, ImportStar, Name, \
+    Attribute
 from modulegraph.find_modules import find_modules, parse_mf_results
 from modulegraph.modulegraph import ModuleGraph, Package, Node
 from stdlib_list import stdlib_list
 
 from snakepack.analyzers import Analyzer
 from snakepack.assets import Asset, AssetGroup, FileContentSource
-from snakepack.assets.python import PythonPackage, PythonApplication, PythonModule
+from snakepack.assets.python import PythonPackage, PythonApplication, PythonModule, PythonModuleCst
 
 _STDLIB_PATHS = [Path(path) for path in set(sys.path) - set(getsitepackages())]
 _STDLIB_MODULES = {}
@@ -85,10 +87,17 @@ class ImportGraphAnalyzer(Analyzer):
             modules=modules
         )
 
+        # run import node analysis
+        import_metadata = {
+            module: module.content.metadata_wrapper.resolve(self.ImportProvider)
+            for module in application.deep_assets
+        }
+
         return self.Analysis(
             module_graph=module_graph,
             application=application,
-            node_map=node_map
+            node_map=node_map,
+            import_metadata=import_metadata
         )
 
     @staticmethod
@@ -96,7 +105,7 @@ class ImportGraphAnalyzer(Analyzer):
         if isinstance(dependency, Package):
             asset = PythonModule.from_source(
                 full_name=dependency.identifier + '.__init__',
-                source=FileContentSource(dependency.filename)
+                source=FileContentSource(dependency.filename, default_content_type=PythonModuleCst)
             )
         else:
             if str(entry_path.resolve()) == dependency.identifier:
@@ -112,7 +121,7 @@ class ImportGraphAnalyzer(Analyzer):
 
             asset = PythonModule.from_source(
                 full_name=name,
-                source=FileContentSource(dependency.filename)
+                source=FileContentSource(dependency.filename, default_content_type=PythonModuleCst)
             )
 
         return asset
@@ -134,7 +143,8 @@ class ImportGraphAnalyzer(Analyzer):
                 self,
                 module_graph: ModuleGraph,
                 application: PythonApplication,
-                node_map: Mapping[PythonModule, Node]
+                node_map: Mapping[PythonModule, Node],
+                import_metadata: Mapping[PythonModule, Mapping[CSTNode, Iterable[Union[Import, ImportFrom]]]]
         ):
             self._module_graph = module_graph
             self._application = application
@@ -142,6 +152,7 @@ class ImportGraphAnalyzer(Analyzer):
             self._inverted_node_map = {
                 value: key for key, value in node_map.items()
             }
+            self._import_metadata = import_metadata
 
         @property
         def module_graph(self):
@@ -151,11 +162,76 @@ class ImportGraphAnalyzer(Analyzer):
         def application(self) -> PythonApplication:
             return self._application
 
-        def get_importing_modules(self, module: PythonModule) -> Iterable[PythonModule]:
+        def get_importing_modules(self, module: PythonModule, identifier: Optional[str] = None) -> Iterable[PythonModule]:
             importing_nodes = self._module_graph.getReferers(self._node_map[module])
+            importing_modules = [
+                    self._inverted_node_map[importing_node]
+                    for importing_node in importing_nodes
+                ]
 
-            return [
-                self._inverted_node_map[importing_node]
-                for importing_node in importing_nodes
-            ]
+            if identifier is None:
+                return importing_modules
 
+            modules_importing_identifier = []
+
+            for importing_module in importing_modules:
+                import_stmts = self._import_metadata[importing_module]
+                identifier_imported = False
+
+                for import_stmt in import_stmts:
+                    if isinstance(import_stmt, Import):
+                        for imported_name in import_stmt.names:
+                            name = imported_name.value if isinstance(imported_name, Name) else imported_name.attr.value
+
+                            if module.full_name == name:
+                                identifier_imported = True
+                                break
+
+                        if identifier_imported:
+                            break
+                    elif isinstance(import_stmt, ImportFrom):
+                        target_module = '.'.join(importing_module.full_name.split('.')[-1])
+
+                        for relative_dot in import_stmt.relative:
+                            target_module = '.'.join(importing_module.full_name.split('.')[-1])
+
+                        target_module = f'{target_module}.{import_stmt.module}'
+
+                        if target_module != module.full_name:
+                            continue
+
+                        for imported_name in import_stmt.names:
+                            if isinstance(imported_name, ImportStar):
+                                identifier_imported = True
+                                break
+
+                            for import_alias in imported_name:
+                                name = imported_name.value if isinstance(imported_name, Name) else imported_name.attr.value
+
+                                if name == identifier:
+                                    identifier_imported = True
+                                    break
+
+                            if identifier_imported:
+                                break
+
+                        if identifier_imported:
+                            break
+
+                modules_importing_identifier.append(importing_module)
+
+            return modules_importing_identifier
+
+    class ImportProvider(VisitorMetadataProvider[Iterable[Union[Import, ImportFrom]]]):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._imports = []
+
+        def visit_Import(self, node: Import) -> Optional[bool]:
+            self._imports.append(node)
+
+        def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
+            self._imports.append(node)
+
+        def visit_Module(self, node: Module) -> Optional[bool]:
+            self.set_metadata(node, self._imports)

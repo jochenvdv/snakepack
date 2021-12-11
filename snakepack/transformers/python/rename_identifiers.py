@@ -5,6 +5,7 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider
 
 from snakepack.analyzers import Analyzer
+from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets import AssetGroup
 from snakepack.assets.python import PythonModule, Python, PythonModuleCst
@@ -43,6 +44,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             if self._analyses[ScopeAnalyzer].is_attribute(self._subject, node):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
+                return
+
+            if len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0:
+                # don't rename because this identifier is imported in another module
                 return
 
             scope = self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][node]

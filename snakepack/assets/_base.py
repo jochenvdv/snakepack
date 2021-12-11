@@ -98,34 +98,51 @@ class StringAssetContent(AssetContent[U]):
 
 
 class AssetContentSource(ABC):
+    def __init__(self, default_content_type: Optional[Type[AssetContent]] = None):
+        self._default_content_type = default_content_type
+
     @abstractmethod
-    def load(self) -> StringAssetContent:
+    def load(self) -> AssetContent:
         raise NotImplementedError
 
 
 class RuntimeContentSource(AssetContentSource):
-    def __init__(self, content: AssetContent):
+    def __init__(self, content: AssetContent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._content = content
 
-    def load(self) -> StringAssetContent:
+    def load(self) -> AssetContent:
+        if self._default_content_type is not None and not isinstance(self._content, self._default_content_type):
+            return self._default_content_type.from_string(self._content.load().to_string())
+
         return self._content.to_string()
 
 
 class FileContentSource(AssetContentSource):
-    def __init__(self, path):
+    def __init__(self, path, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._path = path
 
     @property
     def path(self) -> Path:
         return self._path
 
-    def load(self) -> StringAssetContent:
+    def load(self) -> AssetContent:
         with open(self._path) as f:
-            return StringAssetContent(f.read())
+            string_content = f.read()
+
+        if self._default_content_type is not None:
+            return self._default_content_type.from_string(string_content)
+
+        return StringAssetContent(string_content)
 
 
 class AssetContentCache:
-    def __init__(self, content_or_source: Union[AssetContentSource, AssetContent]):
+    def __init__(
+            self,
+            content_or_source: Union[AssetContentSource, AssetContent],
+            default_content_type: Optional[Type[AssetContent]] = None
+    ):
         if isinstance(content_or_source, AssetContentSource):
             self._content_source = content_or_source
             self._cached_content = None

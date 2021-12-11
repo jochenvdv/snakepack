@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import namedtuple
-from typing import Optional, Dict, Iterable, List, Callable, TypeVar
+from typing import Optional, Dict, Iterable, List, Callable, TypeVar, Type
 
+from snakepack.analyzers import Analyzer
+from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.assets import AssetContentSource, Asset
 from snakepack.assets.python import PythonModuleCst
 from snakepack.bundlers import Bundle
@@ -18,6 +20,7 @@ class Compiler:
     def __init__(self, config: SnakepackConfig, executor: Executor):
         self._config = config
         self._packages: List[Package] = []
+        self._loaders: Dict[Bundle, Loader] = {}
         self._executor = executor
 
     def run(self):
@@ -34,6 +37,7 @@ class Compiler:
             for bundle_name, bundle_config in package_config.bundles.items():
                 bundler = bundle_config.bundler.initialize_component(global_options=self._config)
                 loader = bundle_config.loader.initialize_component(global_options=self._config)
+                self._loaders[bundler] = loader
                 transformers = [
                     transformer.initialize_component(global_options=self._config)
                     for transformer in bundle_config.transformers
@@ -55,13 +59,12 @@ class Compiler:
         for package in self._packages:
             for bundle in package.bundles.values():
                 for asset in bundle.asset_group.deep_assets:
-                    asset.content[PythonModuleCst]
                     for transformer in bundle.transformers:
                         if not any(map(lambda x: asset.matches(x), transformer.options.excludes)):
                             analyses = {
                                 analyzer: self._executor.execute(
                                     task_name=f"Running '{analyzer.__config_name__}' analyzer on asset '{asset.full_name}'",
-                                    task=lambda: analyzer().analyse(subject=asset)
+                                    task=lambda: self._run_analysis(bundle, analyzer, asset)
                                 )
                                 for analyzer in transformer.REQUIRED_ANALYZERS
                             }
@@ -73,6 +76,12 @@ class Compiler:
     def _package_assets(self):
         for package in self._packages:
             package.package()
+
+    def _create_analyzer(self, bundle: Bundle, analyzer_class: Type[Analyzer], subject: Asset) -> Analyzer.Analysis:
+        if analyzer_class is not ImportGraphAnalyzer:
+            return analyzer_class().analyse(subject)
+
+        return self._loaders[bundle].analysis
 
 
 T = TypeVar('T')
