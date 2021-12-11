@@ -1,7 +1,7 @@
 from textwrap import dedent
 
 from libcst import parse_module
-from libcst.metadata import FunctionScope
+from libcst.metadata import FunctionScope, ScopeProvider
 
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst, PythonModule
@@ -38,5 +38,5 @@ class ScopeAnalyzerIntegrationTest:
 
         g_var = content.cst.body[2].body.body[1].body.body[0].body[0].value
 
-        assert isinstance(analysis[module][g_var], FunctionScope)
-        assert analysis[module][g_var]
+        assert isinstance(analysis[module][ScopeProvider][g_var], FunctionScope)
+        assert analysis[module][ScopeProvider][g_var]

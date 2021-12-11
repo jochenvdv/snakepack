@@ -25,6 +25,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                     foo(x);
                     y = 6
                     a = x + y
+                    Class.attr = 'bar'
                     """
                 )
             )
@@ -39,10 +40,11 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                     def c(a, c):
                         return b(a, c)
                     class d(object):
-                        a = 'foo'
+                        attr = 'foo'
                     b(a);
                     e = 6
                     f = a + e
+                    d.attr = 'bar'
                     """
                 )
             )

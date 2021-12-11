@@ -38,9 +38,14 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
         def visit_Name(self, node: Name) -> Optional[bool]:
             if node in self._renames:
+                # already marked this identifier to be renamed
                 return
 
-            scope = self._analyses[ScopeAnalyzer][self._subject][node]
+            if self._analyses[ScopeAnalyzer].is_attribute(self._subject, node):
+                # don't rename class attributes (nearly impossible to find all references through static analysis)
+                return
+
+            scope = self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][node]
 
             for assignment in scope.assignments[node]:
                 if assignment.name is node.value:
