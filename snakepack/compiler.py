@@ -37,7 +37,6 @@ class Compiler:
             for bundle_name, bundle_config in package_config.bundles.items():
                 bundler = bundle_config.bundler.initialize_component(global_options=self._config)
                 loader = bundle_config.loader.initialize_component(global_options=self._config)
-                self._loaders[bundler] = loader
                 transformers = [
                     transformer.initialize_component(global_options=self._config)
                     for transformer in bundle_config.transformers
@@ -45,6 +44,7 @@ class Compiler:
 
                 bundle = Bundle(name=bundle_name, bundler=bundler, loader=loader, transformers=transformers)
                 bundles.append(bundle)
+                self._loaders[bundle] = loader
 
             package = Package(name=package_name, packager=packager, bundles=bundles)
             self._packages.append(package)
@@ -77,7 +77,7 @@ class Compiler:
         for package in self._packages:
             package.package()
 
-    def _create_analyzer(self, bundle: Bundle, analyzer_class: Type[Analyzer], subject: Asset) -> Analyzer.Analysis:
+    def _run_analysis(self, bundle: Bundle, analyzer_class: Type[Analyzer], subject: Asset) -> Analyzer.Analysis:
         if analyzer_class is not ImportGraphAnalyzer:
             return analyzer_class().analyse(subject)
 

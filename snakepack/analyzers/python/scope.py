@@ -45,8 +45,17 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
         def is_attribute(self, module: PythonModule, node: Name) -> bool:
             return (
                     isinstance(self._modules_metadata[module][ParentNodeProvider][node], Attribute)
-                    or isinstance(self._modules_metadata[module][ScopeProvider][node], ClassScope)
+                    or isinstance(self.get_scope_for_node(module, node), ClassScope)
             )
+
+        def get_scope_for_node(self, module: PythonModule, node: CSTNode) -> Scope:
+            current_node = node
+
+            while True:
+                if current_node in self._modules_metadata[module][ScopeProvider]:
+                    return self._modules_metadata[module][ScopeProvider][current_node]
+
+                current_node = self._modules_metadata[module][ParentNodeProvider][current_node]
 
     __config_name__ = 'scope'
 

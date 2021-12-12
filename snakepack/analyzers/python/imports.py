@@ -1,3 +1,4 @@
+import functools
 import sys
 from pathlib import Path
 from site import getsitepackages
@@ -55,7 +56,8 @@ class ImportGraphAnalyzer(Analyzer):
                 else:
                     # module is not in a package
                     modules.append(module)
-                    node_map[module] = python_module
+
+                node_map[module] = python_module
 
         assert entry_point is not None, 'Didn\t encounter entry point module in import graph'
 
@@ -132,6 +134,7 @@ class ImportGraphAnalyzer(Analyzer):
 
         if python_version not in _STDLIB_MODULES:
             _STDLIB_MODULES[python_version] = set(stdlib_list(str(python_version)))
+            _STDLIB_MODULES[python_version].add('sitecustomize')
 
         return (
                 any(map(lambda x: x in file_path.parents, _STDLIB_PATHS))
@@ -181,7 +184,7 @@ class ImportGraphAnalyzer(Analyzer):
                 for import_stmt in import_stmts:
                     if isinstance(import_stmt, Import):
                         for imported_name in import_stmt.names:
-                            name = imported_name.value if isinstance(imported_name, Name) else imported_name.attr.value
+                            name = imported_name.name.value if isinstance(imported_name.name, Name) else imported_name.name.attr.value
 
                             if module.full_name == name:
                                 identifier_imported = True
@@ -218,7 +221,8 @@ class ImportGraphAnalyzer(Analyzer):
                         if identifier_imported:
                             break
 
-                modules_importing_identifier.append(importing_module)
+                if identifier_imported:
+                    modules_importing_identifier.append(importing_module)
 
             return modules_importing_identifier
 
@@ -235,3 +239,5 @@ class ImportGraphAnalyzer(Analyzer):
 
         def visit_Module(self, node: Module) -> Optional[bool]:
             self.set_metadata(node, self._imports)
+
+    __config_name__ = 'import_graph'

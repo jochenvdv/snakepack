@@ -1,8 +1,8 @@
 from typing import Optional, Union, Dict, Mapping, Type
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
-    MaybeSentinel, Name, BaseExpression, CSTNode
-from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider
+    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom
+from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -14,6 +14,11 @@ from snakepack.transformers.python._renaming import NameRegistry
 
 
 class RenameIdentifiersTransformer(PythonModuleTransformer):
+    REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
+        ScopeAnalyzer,
+        ImportGraphAnalyzer
+    ]
+
     def transform(
             self,
             analyses: Mapping[Type[Analyzer], Analyzer.Analysis],
@@ -37,6 +42,14 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             self._renames: Dict[CSTNode, str] = {}
             self._accesses: Dict[CSTNode, str] = {}
 
+        def visit_Import(self, node: Import) -> Optional[bool]:
+            # don't rename import identifiers
+            return False
+
+        def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
+            # don't rename import identifiers
+            return False
+
         def visit_Name(self, node: Name) -> Optional[bool]:
             if node in self._renames:
                 # already marked this identifier to be renamed
@@ -50,7 +63,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename because this identifier is imported in another module
                 return
 
-            scope = self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][node]
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, node)
 
             for assignment in scope.assignments[node]:
                 if assignment.name is node.value:
