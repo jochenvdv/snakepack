@@ -7,7 +7,7 @@ from typing import Union, Iterable, Mapping, Optional
 from libcst import VisitorMetadataProvider, Import, ImportFrom, Module, MetadataWrapper, CSTNode, ImportStar, Name, \
     Attribute
 from modulegraph.find_modules import find_modules, parse_mf_results
-from modulegraph.modulegraph import ModuleGraph, Package, Node
+from modulegraph.modulegraph import ModuleGraph, Package, Node, Extension, SourceModule
 from stdlib_list import stdlib_list
 
 from snakepack.analyzers import Analyzer
@@ -46,6 +46,7 @@ class ImportGraphAnalyzer(Analyzer):
 
                 if module.source.path == str(self._entry_point_path.resolve()):
                     entry_point = module
+                    print(entry_point)
 
                 if len(pkg_name) > 0:
                     # module is in a package
@@ -168,8 +169,8 @@ class ImportGraphAnalyzer(Analyzer):
         def get_importing_modules(self, module: PythonModule, identifier: Optional[str] = None) -> Iterable[PythonModule]:
             importing_nodes = self._module_graph.getReferers(self._node_map[module])
             importing_modules = [
-                    self._inverted_node_map[importing_node]
-                    for importing_node in importing_nodes
+                    self._inverted_node_map[importing_node] if not isinstance(importing_node, Extension) else importing_node
+                    for importing_node in importing_nodes if importing_node is not None
                 ]
 
             if identifier is None:
@@ -178,6 +179,11 @@ class ImportGraphAnalyzer(Analyzer):
             modules_importing_identifier = []
 
             for importing_module in importing_modules:
+                if isinstance(importing_module, Extension):
+                    # cannot analyze C extensions, assume identifier is imported
+                    identifier_imported = True
+                    break
+
                 import_stmts = self._import_metadata[importing_module]
                 identifier_imported = False
 
