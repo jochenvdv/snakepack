@@ -1,7 +1,8 @@
 from typing import Optional, Union
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
-    MaybeSentinel, ClassDef, Name, FunctionDef, CSTNode, BaseSmallStatement, Assign, Attribute, AnnAssign
+    MaybeSentinel, ClassDef, Name, FunctionDef, CSTNode, BaseSmallStatement, Assign, Attribute, AnnAssign, Import, \
+    Tuple, List, ImportFrom, ImportStar
 from libcst.metadata import FunctionScope, ClassScope, ComprehensionScope, GlobalScope
 
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -63,6 +64,52 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
                 return RemovalSentinel.REMOVE
 
             return updated_node
+
+        def leave_Import(
+                self, original_node: Import, updated_node: Import
+        ) -> Union[BaseSmallStatement, FlattenSentinel[BaseSmallStatement], RemovalSentinel]:
+            updated_imports = []
+
+            for import_ in original_node.names:
+                if import_.asname is None:
+                    imported_name = import_.name.value if isinstance(import_.name, Name) else import_.name.attr.value
+                else:
+                    assert isinstance(import_.asname.name, Name)
+                    imported_name = import_.asname.name.value
+
+                if self._is_referenced(import_.name, imported_name):
+                    updated_imports.append(import_)
+
+            if len(updated_imports) > 0:
+                updated_imports[-1] = updated_imports[-1].with_changes(comma=MaybeSentinel.DEFAULT)
+                return updated_node.with_changes(names=updated_imports)
+
+            return RemovalSentinel.REMOVE
+
+        def leave_ImportFrom(
+                self, original_node: ImportFrom, updated_node: ImportFrom
+        ) -> Union[BaseSmallStatement, FlattenSentinel[BaseSmallStatement], RemovalSentinel]:
+            if isinstance(updated_node.names, ImportStar):
+                # don't remove star imports
+                return updated_node
+
+            updated_imports = []
+
+            for import_ in original_node.names:
+                if import_.asname is None:
+                    imported_name = import_.name.value if isinstance(import_.name, Name) else import_.name.attr.value
+                else:
+                    assert isinstance(import_.asname.name, Name)
+                    imported_name = import_.asname.name.value
+
+                if self._is_referenced(import_.name, imported_name):
+                    updated_imports.append(import_)
+
+            if len(updated_imports) > 0:
+                updated_imports[-1] = updated_imports[-1].with_changes(comma=MaybeSentinel.DEFAULT)
+                return updated_node.with_changes(names=updated_imports)
+
+            return RemovalSentinel.REMOVE
 
         def _is_referenced(self, node: CSTNode, identifier: str) -> bool:
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, node)
