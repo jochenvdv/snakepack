@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 
 from snakepack.bundlers.generic import FileBundler
-from snakepack.compiler import Compiler, SynchronousExecutor
+from snakepack.compiler import Compiler, SynchronousExecutor, MultiProcessExecutor
 from snakepack.config._base import register_components
 from snakepack.config.parsing import parse_yaml_config
 from snakepack.loaders.python import ImportGraphLoader
@@ -17,7 +17,8 @@ register_components()
 
 @click.command()
 @click.argument('base_dir', required=False, type=click.Path(exists=True, file_okay=False, resolve_path=True))
-def snakepack(base_dir, dry_run=False):
+@click.option('-p', '--parallel', required=False, default=True, is_flag=True)
+def snakepack(base_dir, parallel=True):
     if base_dir is None:
         config_file = Path('.') / DEFAULT_CONFIG_FILE
     else:
@@ -27,7 +28,11 @@ def snakepack(base_dir, dry_run=False):
         config_yaml = f.read()
 
     config = parse_yaml_config(config_yaml)
-    executor = SynchronousExecutor()
+
+    if parallel:
+        executor = MultiProcessExecutor()
+    else:
+        executor = SynchronousExecutor()
 
     compiler = Compiler(config=config, executor=executor)
     compiler.run()

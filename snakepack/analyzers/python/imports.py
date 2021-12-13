@@ -46,7 +46,6 @@ class ImportGraphAnalyzer(Analyzer):
 
                 if module.source.path == str(self._entry_point_path.resolve()):
                     entry_point = module
-                    print(entry_point)
 
                 if len(pkg_name) > 0:
                     # module is in a package

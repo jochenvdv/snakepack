@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import os
 from abc import ABC, abstractmethod
 from collections import namedtuple
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from typing import Optional, Dict, Iterable, List, Callable, TypeVar, Type
+
+from loky import get_reusable_executor
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -55,44 +60,97 @@ class Compiler:
                 bundle.load()
 
     def _transform_assets(self):
-        # this comment should not be removed
         for package in self._packages:
             for bundle in package.bundles.values():
+                tasks = []
+
                 for asset in bundle.asset_group.deep_assets:
-                    for transformer in bundle.transformers:
-                        if not any(map(lambda x: asset.matches(x), transformer.options.excludes)):
-                            analyses = {
-                                analyzer: self._executor.execute(
-                                    task_name=f"Running '{analyzer.__config_name__}' analyzer on asset '{asset.full_name}'",
-                                    task=lambda: self._run_analysis(bundle, analyzer, asset)
-                                )
-                                for analyzer in transformer.REQUIRED_ANALYZERS
-                            }
-                            self._executor.execute(
-                                task_name=f"Applying '{transformer.__config_name__}' transformer to asset '{asset.full_name}'",
-                                task=lambda: transformer.transform(analyses=analyses, subject=asset)
+                    transformers = [
+                        transformer
+                        for transformer in bundle.transformers
+                        if not any(map(lambda x: asset.matches(x), transformer.options.excludes))
+                    ]
+
+                    tasks.append(
+                        Task(
+                            name=f"Transforming '{asset.full_name}'",
+                            callable=partial(
+                                Compiler._transform_asset,
+                                asset=asset,
+                                transformers=transformers,
+                                import_analysis=self._loaders[bundle].analysis
                             )
+                        )
+                    )
+
+                for task in self._executor.execute(tasks):
+                    print('Ok: ' + task.name)
 
     def _package_assets(self):
         for package in self._packages:
             package.package()
 
-    def _run_analysis(self, bundle: Bundle, analyzer_class: Type[Analyzer], subject: Asset) -> Analyzer.Analysis:
+    @staticmethod
+    def _run_analysis(analyzer_class, import_analysis, subject) -> Analyzer.Analysis:
         if analyzer_class is not ImportGraphAnalyzer:
             return analyzer_class().analyse(subject)
 
-        return self._loaders[bundle].analysis
+        return import_analysis
+
+    @staticmethod
+    def _transform_asset(asset, transformers, import_analysis):
+        for transformer in transformers:
+            analyses = {
+                analyzer: Compiler._run_analysis(analyzer, import_analysis, asset)
+                for analyzer in transformer.REQUIRED_ANALYZERS
+            }
+
+            transformer.transform(analyses=analyses, subject=asset)
 
 
 T = TypeVar('T')
 
 
+class Task:
+    def __init__(self, name: str, callable: Callable[..., T]):
+        self._name = name
+        self._callable = callable
+        self._result = None
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def result(self):
+        return self._result
+
+    def run(self) -> Task:
+        self._result = self._callable()
+        return self
+
+
 class Executor(ABC):
     @abstractmethod
-    def execute(self, task_name: str, task: Callable[..., T]):
+    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
         raise NotImplemented
 
 
 class SynchronousExecutor(Executor):
-    def execute(self, task_name: str, task: Callable[..., T]):
-        return task()
+    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
+        return map(
+            lambda x: x.run(),
+            tasks
+        )
+
+
+class MultiProcessExecutor(Executor):
+    def __init__(self):
+        os.environ['LOKY_PICKLER'] = 'cloudpickle'
+        self._executor = get_reusable_executor()
+
+    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
+        return self._executor.map(
+            lambda x: x.run(),
+            tasks
+        )

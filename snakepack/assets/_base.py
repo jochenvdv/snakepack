@@ -150,6 +150,12 @@ class AssetContentCache:
             self._cached_content = content_or_source
             self._content_source = None
 
+    def __getstate__(self):
+        return vars(self)
+
+    def __setstate__(self, state):
+        vars(self).update(state)
+
     def __getattr__(self, attr) -> Any:
         self._ensure_content_loaded()
         return getattr(self._cached_content, attr)

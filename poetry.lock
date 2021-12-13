@@ -48,6 +48,14 @@ python-versions = ">=3.6"
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "cloudpickle"
+version = "2.0.0"
+description = "Extended pickling support for Python objects"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "colorama"
 version = "0.4.4"
 description = "Cross-platform colored terminal text."
@@ -170,6 +178,17 @@ typing-inspect = ">=0.4.0"
 
 [package.extras]
 dev = ["black (==20.8b1)", "coverage (>=4.5.4)", "fixit (==0.1.1)", "flake8 (>=3.7.8)", "hypothesis (>=4.36.0)", "hypothesmith (>=0.0.4)", "jupyter (>=1.0.0)", "nbsphinx (>=0.4.2)", "prompt-toolkit (>=2.0.9)", "pyre-check (==0.9.3)", "setuptools-scm (>=6.0.1)", "sphinx-rtd-theme (>=0.4.3)", "tox (>=3.18.1)", "ufmt (==1.2)", "usort (==0.6.3)"]
+
+[[package]]
+name = "loky"
+version = "3.0.0"
+description = "A robust implementation of concurrent.futures.ProcessPoolExecutor"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+cloudpickle = "*"
 
 [[package]]
 name = "modulegraph"
@@ -437,7 +456,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "c66a92b3ea5f8c6d3f4eda69b78634272caf7d0ed50a36ff7ff922618d2309d6"
+content-hash = "dcdb6f976f325ba1bb7f5e6cdf0e1083316ed87557054c46033b806441443034"
 
 [metadata.files]
 altgraph = [
@@ -459,6 +478,10 @@ boltons = [
 click = [
     {file = "click-8.0.3-py3-none-any.whl", hash = "sha256:353f466495adaeb40b6b5f592f9f91cb22372351c84caeb068132442a4518ef3"},
     {file = "click-8.0.3.tar.gz", hash = "sha256:410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b"},
+]
+cloudpickle = [
+    {file = "cloudpickle-2.0.0-py3-none-any.whl", hash = "sha256:6b2df9741d06f43839a3275c4e6632f7df6487a1f181f5f46a052d3c917c3d11"},
+    {file = "cloudpickle-2.0.0.tar.gz", hash = "sha256:5cd02f3b417a783ba84a4ec3e290ff7929009fe51f6405423cfccfadd43ba4a4"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -545,6 +568,10 @@ lark-parser = [
 libcst = [
     {file = "libcst-0.3.21-py3-none-any.whl", hash = "sha256:a9c6fea4fa3bf92f87e40c6850dec099aaa7aaf963a934c763844544b32d3a1e"},
     {file = "libcst-0.3.21.tar.gz", hash = "sha256:4302a8f09cd9e5ab5962f8e126d032bba98541893dd38cce6b4770969fed059d"},
+]
+loky = [
+    {file = "loky-3.0.0-py2.py3-none-any.whl", hash = "sha256:1d5a4d778c7ff09c919aa3fbf2d879a2c7ac936a545c615af40e080a1c902b82"},
+    {file = "loky-3.0.0.tar.gz", hash = "sha256:fd8750b24b283a579bafaf0631d114aa4487c682aef6fce01fa3635336297fdf"},
 ]
 modulegraph = [
     {file = "modulegraph-0.19.2-py2.py3-none-any.whl", hash = "sha256:7985a8b3d97307b26e1872949973239b273602a041a3e2caedf80bc640909991"},
