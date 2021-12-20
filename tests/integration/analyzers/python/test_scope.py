@@ -34,9 +34,9 @@ class ScopeAnalyzerIntegrationTest:
         )
 
         analyzer = ScopeAnalyzer()
-        analysis = analyzer.analyse(module)
+        analysis = analyzer.analyse_subject(module)
 
         g_var = content.cst.body[2].body.body[1].body.body[0].body[0].value
 
-        assert isinstance(analysis[module][ScopeProvider][g_var], FunctionScope)
-        assert analysis[module][ScopeProvider][g_var]
+        assert isinstance(analysis[ScopeProvider][g_var], FunctionScope)
+        assert analysis[ScopeProvider][g_var]

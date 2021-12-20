@@ -40,7 +40,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
                 # don't touch multi-assignments (need type inference for reliably remove)
                 return updated_node
 
-            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, original_node)
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(original_node)
 
             if not isinstance(updated_node.targets[0].target, Name) or isinstance(scope, ClassScope):
                 # don't touch attributes (references not reliably detected)
@@ -54,7 +54,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
         def leave_AnnAssign(
                 self, original_node: AnnAssign, updated_node: AnnAssign
         ) -> Union[BaseSmallStatement, FlattenSentinel[BaseSmallStatement], RemovalSentinel]:
-            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, original_node)
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(original_node)
 
             if not isinstance(updated_node.target, Name) or isinstance(scope, ClassScope):
                 # don't touch attributes (references not reliably detected)
@@ -112,7 +112,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
             return RemovalSentinel.REMOVE
 
         def _is_referenced(self, node: CSTNode, identifier: str) -> bool:
-            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, node)
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
             assert identifier in scope
 
             if identifier in scope.accesses:

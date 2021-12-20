@@ -55,7 +55,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # already marked this identifier to be renamed
                 return
 
-            if self._analyses[ScopeAnalyzer].is_attribute(self._subject, node):
+            if self._analyses[ScopeAnalyzer].is_attribute(node):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
                 return
 
@@ -63,7 +63,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename because this identifier is imported in another module
                 return
 
-            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(self._subject, node)
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
 
             for assignment in scope.assignments[node]:
                 if assignment.name is node.value:

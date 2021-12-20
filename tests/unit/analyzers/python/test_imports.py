@@ -138,8 +138,12 @@ class ImportGraphAnalyzerAnalysisTest:
 
         testmodule_imports = MagicMock()
         import_metadata = {
-            module1: module1_imports,
-            module2: module2_imports,
+            module1: {
+                ImportGraphAnalyzer.ImportProvider: module1_imports
+            },
+            module2: {
+                ImportGraphAnalyzer.ImportProvider: module2_imports
+            },
             test_imported_module: testmodule_imports
         }
 

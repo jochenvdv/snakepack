@@ -17,6 +17,7 @@ from snakepack.transformers.python._renaming import NameRegistry
 
 class HoistLiteralsTransformer(PythonModuleTransformer):
     REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
+        ScopeAnalyzer,
         LiteralDuplicationAnalyzer
     ]
 
@@ -29,27 +30,26 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
             self._hoisted_literals: Dict[str, Tuple[str, BaseExpression]] = {}
 
         def leave_SimpleString(self, original_node: SimpleString, updated_node: SimpleString) -> BaseExpression:
-            if self._analyses[LiteralDuplicationAnalyzer].is_part_of_concatenated_string(self._subject, original_node):
+            if self._analyses[LiteralDuplicationAnalyzer].is_part_of_concatenated_string(original_node):
                 # don't hoist if string is part of a concatenated string
                 return updated_node
 
-            occurrences = self._analyses[LiteralDuplicationAnalyzer].get_occurrences(self._subject, original_node)
+            occurrences = self._analyses[LiteralDuplicationAnalyzer].get_occurrences(original_node)
 
             if len(occurrences) < 2:
                 # don't hoist if only used once
                 return updated_node
 
             # check if assignment exists for this value
-            scope = self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][original_node]
+            scope = self._analyses[ScopeAnalyzer][ScopeProvider][original_node]
             assignments = self._analyses[LiteralDuplicationAnalyzer].get_preceding_assignments(
-                module=self._subject,
                 literal_node=original_node,
                 scope=scope
             )
 
             if (
                     assignments is not None and len(assignments) > 0
-                    and all(map(lambda x: self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][x] is scope, occurrences))
+                    and all(map(lambda x: self._analyses[ScopeAnalyzer][ScopeProvider][x] is scope, occurrences))
             ):
                 # use existing assigned identifier
                 use_existing_assignment = True
@@ -86,7 +86,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
                 if (
                         original_node in map(lambda x: x.value, flatten(map(lambda x: x[1], assignments.items())))
-                        and all(map(lambda x: self._analyses[ScopeAnalyzer][self._subject][ScopeProvider][x] is scope, occurrences))
+                        and all(map(lambda x: self._analyses[ScopeAnalyzer][ScopeProvider][x] is scope, occurrences))
                 ):
                     # do not replace literal with a reference in the first in-scope assignment itself
                     return updated_node

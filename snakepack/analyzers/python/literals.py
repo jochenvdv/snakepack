@@ -14,39 +14,29 @@ from snakepack.assets.python import PythonModule, PythonModuleCst
 
 
 class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
-    def analyse(self, subject: Union[Asset, AssetGroup]) -> LiteralDuplicationAnalyzer.Analysis:
+    def analyse_subject(self, subject: Union[Asset, AssetGroup]) -> LiteralDuplicationAnalyzer.Analysis:
         if isinstance(subject, PythonModule):
-            metadata = subject.content.metadata_wrapper.resolve_many([
-                ParentNodeProvider,
-                self._LiteralDuplicationCountProvider,
-                self._LiteralAssignmentProvider
-            ])
-
-            return LiteralDuplicationAnalyzer.Analysis(
-                modules_metadata={
-                    subject: metadata
-                }
-            )
+            metadata = subject.content.metadata_wrapper.resolve_many(self.CST_PROVIDERS)
+            return self.create_analysis(metadata)
         else:
             raise NotImplementedError
 
     class Analysis(PythonModuleCstAnalyzer.Analysis):
-        def get_occurrences(self, module: PythonModule, literal_node: SimpleString) -> Optional[int]:
-            if literal_node not in self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider]:
+        def get_occurrences(self, literal_node: SimpleString) -> Optional[int]:
+            if literal_node not in self._metadata[LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider]:
                 return None
 
-            return self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider][literal_node]
+            return self._metadata[LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider][literal_node]
 
-        def is_part_of_concatenated_string(self, module, literal_node: SimpleString) -> bool:
-            return isinstance(self._modules_metadata[module][ParentNodeProvider][literal_node], ConcatenatedString)
+        def is_part_of_concatenated_string(self, literal_node: SimpleString) -> bool:
+            return isinstance(self._metadata[ParentNodeProvider][literal_node], ConcatenatedString)
 
         def get_preceding_assignments(
                 self,
-                module: PythonModule,
                 literal_node: SimpleString,
                 scope: Scope
         ) -> Dict[str, Sequence[Union[Assign, AnnAssign, AugAssign]]]:
-            for literal, assignments in self._modules_metadata[module][LiteralDuplicationAnalyzer._LiteralAssignmentProvider].items():
+            for literal, assignments in self._metadata[LiteralDuplicationAnalyzer._LiteralAssignmentProvider].items():
                 if literal_node.value == literal.value:
                     return {
                         key: value
@@ -131,5 +121,11 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
                             (not isinstance(value, SimpleString) or value.value != literal_value))):
                         # invalidate because re-assignment to identifier with another value
                         del self._literal_assignments[literal_value][name.value]
+
+    CST_PROVIDERS = {
+        ParentNodeProvider,
+        _LiteralDuplicationCountProvider,
+        _LiteralAssignmentProvider
+    }
 
     __config_name__ = 'literal_duplication'

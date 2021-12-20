@@ -14,18 +14,16 @@ from snakepack.config.types import Selector, FullyQualifiedPythonName
 
 
 class ScopeAnalyzer(PythonModuleCstAnalyzer):
-    def analyse(self, subject: Union[Asset, AssetGroup]) -> ScopeAnalyzer.Analysis:
-        if isinstance(subject, PythonModule):
-            metadata = subject.content.metadata_wrapper.resolve_many([
-                ScopeProvider,
-                ParentNodeProvider
-            ])
+    CST_PROVIDERS = {
+        ScopeProvider,
+        ParentNodeProvider
+    }
 
-            return ScopeAnalyzer.Analysis(
-                modules_metadata={
-                    subject: metadata
-                }
-            )
+    def analyse_subject(self, subject: Union[Asset, AssetGroup]) -> ScopeAnalyzer.Analysis:
+        if isinstance(subject, PythonModule):
+            metadata = subject.content.metadata_wrapper.resolve_many(self.CST_PROVIDERS)
+
+            return self.create_analysis(metadata)
         else:
             raise NotImplementedError
 
@@ -33,7 +31,7 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
         def get_fully_qualified_names(
                 self, module: PythonModule, node: Union[Name, Attribute, ClassDef, FunctionDef]
         ) -> Iterable[FullyQualifiedPythonName]:
-            qualnames = self._modules_metadata[module][ScopeProvider][node].get_qualified_names_for(node)
+            qualnames = self._metadata[ScopeProvider][node].get_qualified_names_for(node)
 
             return set(
                 map(
@@ -42,20 +40,20 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
                 )
             )
 
-        def is_attribute(self, module: PythonModule, node: Name) -> bool:
+        def is_attribute(self, node: Name) -> bool:
             return (
-                    isinstance(self._modules_metadata[module][ParentNodeProvider][node], Attribute)
-                    or isinstance(self.get_scope_for_node(module, node), ClassScope)
+                    isinstance(self._metadata[ParentNodeProvider][node], Attribute)
+                    or isinstance(self.get_scope_for_node(node), ClassScope)
             )
 
-        def get_scope_for_node(self, module: PythonModule, node: CSTNode) -> Scope:
+        def get_scope_for_node(self, node: CSTNode) -> Scope:
             current_node = node
 
             while True:
-                if current_node in self._modules_metadata[module][ScopeProvider]:
-                    return self._modules_metadata[module][ScopeProvider][current_node]
+                if current_node in self._metadata[ScopeProvider]:
+                    return self._metadata[ScopeProvider][current_node]
 
-                current_node = self._modules_metadata[module][ParentNodeProvider][current_node]
+                current_node = self._metadata[ParentNodeProvider][current_node]
 
     __config_name__ = 'scope'
 

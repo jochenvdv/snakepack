@@ -13,10 +13,6 @@ from snakepack.transformers import Transformer
 
 
 class PythonModuleTransformer(Transformer):
-    REQUIRED_ANALYZERS = Transformer.REQUIRED_ANALYZERS + [
-        ScopeAnalyzer
-    ]
-
     SUPPORTS_FINEGRAINED_EXCLUSIONS = False
 
     def transform(
@@ -43,16 +39,3 @@ class PythonModuleTransformer(Transformer):
             self._options = options
             self._analyses = analyses
             self._transformer = transformer
-
-        def on_visit(self, node: CSTNode) -> bool:
-            if (
-                    self._transformer.SUPPORTS_FINEGRAINED_EXCLUSIONS
-                    and len(self._options.excludes) > 0
-                    and isinstance(node, (ClassDef, FunctionDef))
-            ):
-                names = self._analyses[ScopeAnalyzer].get_fully_qualified_names(self._subject, node)
-
-                if any(map(lambda x: x in names, self._options.excludes)):
-                    return False
-
-            return super().on_visit(node)

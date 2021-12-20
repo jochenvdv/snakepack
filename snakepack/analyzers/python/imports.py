@@ -11,6 +11,8 @@ from modulegraph.modulegraph import ModuleGraph, Package, Node, Extension, Sourc
 from stdlib_list import stdlib_list
 
 from snakepack.analyzers import Analyzer
+from snakepack.analyzers._base import LoadingAnalyzer, SubjectAnalyzer
+from snakepack.analyzers.python import PythonModuleCstAnalyzer
 from snakepack.assets import Asset, AssetGroup, FileContentSource
 from snakepack.assets.python import PythonPackage, PythonApplication, PythonModule, PythonModuleCst
 
@@ -18,20 +20,22 @@ _STDLIB_PATHS = [Path(path) for path in set(sys.path) - set(getsitepackages())]
 _STDLIB_MODULES = {}
 
 
-class ImportGraphAnalyzer(Analyzer):
+class ImportGraphAnalyzer(LoadingAnalyzer):
     def __init__(self, entry_point_path: Path, target_version: str):
         self._entry_point_path = entry_point_path
         self._target_version = target_version
+        self._application = None
+        self._module_graph = None
 
     def analyse(self) -> Analyzer.Analysis:
-        module_graph = find_modules((str(self._entry_point_path),))
-        python_modules, c_extensions = parse_mf_results(module_graph)
+        self._module_graph = find_modules((str(self._entry_point_path),))
+        python_modules, c_extensions = parse_mf_results(self._module_graph)
 
         entry_point = None
         modules = []
 
         pkg_dict = {}
-        node_map = {}
+        self._node_map = {}
 
         for python_module in python_modules:
             if not self._is_stdlib(
@@ -57,7 +61,7 @@ class ImportGraphAnalyzer(Analyzer):
                     # module is not in a package
                     modules.append(module)
 
-                node_map[module] = python_module
+                self._node_map[module] = python_module
 
         assert entry_point is not None, 'Didn\t encounter entry point module in import graph'
 
@@ -83,23 +87,25 @@ class ImportGraphAnalyzer(Analyzer):
             if len(package.full_name.split('.')) == 1
         ]
 
-        application = PythonApplication(
+        self._application = PythonApplication(
             entry_point=entry_point,
             packages=packages,
             modules=modules
         )
 
-        # run import node analysis
-        import_metadata = {
-            module: module.content.metadata_wrapper.resolve(self.ImportProvider)
-            for module in application.deep_assets
+        modules_metadata = {
+            module: module.content.metadata_wrapper.resolve_many(self.CST_PROVIDERS)
+            for module in self._application.deep_assets
         }
 
+        return self.create_analysis(modules_metadata)
+
+    def create_analysis(self, modules_metadata: Mapping[PythonModule, MetadataWrapper]) -> PythonModuleCstAnalyzer.Analysis:
         return self.Analysis(
-            module_graph=module_graph,
-            application=application,
-            node_map=node_map,
-            import_metadata=import_metadata
+            module_graph=self._module_graph,
+            application=self._application,
+            node_map=self._node_map,
+            import_metadata=modules_metadata
         )
 
     @staticmethod
@@ -183,7 +189,7 @@ class ImportGraphAnalyzer(Analyzer):
                     identifier_imported = True
                     break
 
-                import_stmts = self._import_metadata[importing_module]
+                import_stmts = self._import_metadata[importing_module][ImportGraphAnalyzer.ImportProvider]
                 identifier_imported = False
 
                 for import_stmt in import_stmts:
@@ -244,5 +250,9 @@ class ImportGraphAnalyzer(Analyzer):
 
         def visit_Module(self, node: Module) -> Optional[bool]:
             self.set_metadata(node, self._imports)
+
+    CST_PROVIDERS = {
+        ImportProvider
+    }
 
     __config_name__ = 'import_graph'

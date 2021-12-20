@@ -17,8 +17,8 @@ register_components()
 
 @click.command()
 @click.argument('base_dir', required=False, type=click.Path(exists=True, file_okay=False, resolve_path=True))
-@click.option('-p', '--parallel', required=False, default=True, is_flag=True)
-def snakepack(base_dir, parallel=True):
+@click.option('-p', '--parallel', required=False, default=False, is_flag=True)
+def snakepack(base_dir, parallel=False):
     if base_dir is None:
         config_file = Path('.') / DEFAULT_CONFIG_FILE
     else:

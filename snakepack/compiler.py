@@ -10,6 +10,8 @@ from typing import Optional, Dict, Iterable, List, Callable, TypeVar, Type
 from loky import get_reusable_executor
 
 from snakepack.analyzers import Analyzer
+from snakepack.analyzers.python import PythonModuleCstAnalyzer
+from snakepack.analyzers.python._base import BatchPythonModuleCstAnalyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.assets import AssetContentSource, Asset
 from snakepack.assets.python import PythonModuleCst
@@ -100,10 +102,30 @@ class Compiler:
     @staticmethod
     def _transform_asset(asset, transformers, import_analysis):
         for transformer in transformers:
+            batchable_analyzers = []
+            analyzers = []
+            import_analysis_required = False
+
+            for analyzer in transformer.REQUIRED_ANALYZERS:
+                if analyzer is ImportGraphAnalyzer:
+                    import_analysis_required = True
+                elif issubclass(analyzer, PythonModuleCstAnalyzer):
+                    batchable_analyzers.append(analyzer())
+                else:
+                    analyzers.append(analyzer)
+
             analyses = {
-                analyzer: Compiler._run_analysis(analyzer, import_analysis, asset)
-                for analyzer in transformer.REQUIRED_ANALYZERS
+                analyzer: analyzer().analyse_subject(asset)
+                for analyzer in analyzers
             }
+
+            if len(batchable_analyzers) > 0:
+                batch_analyzer = BatchPythonModuleCstAnalyzer(batchable_analyzers)
+                batch_analyses = batch_analyzer.analyse_subject(asset)
+                analyses = {**analyses, **batch_analyses}
+
+            if import_analysis_required:
+                analyses[ImportGraphAnalyzer] = import_analysis
 
             transformer.transform(analyses=analyses, subject=asset)
 

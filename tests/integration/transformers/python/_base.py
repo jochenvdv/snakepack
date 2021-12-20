@@ -3,6 +3,7 @@ from typing import Optional, Iterable
 import pytest
 
 from snakepack.analyzers import Analyzer
+from snakepack.analyzers._base import SubjectAnalyzer
 from snakepack.assets import AssetContent, Asset
 from snakepack.assets.python import PythonModule
 from snakepack.transformers import Transformer
@@ -16,7 +17,11 @@ class PythonModuleCstTransformerIntegrationTestBase:
 
         if analyzers is not None:
             for analyzer in analyzers:
-                analysis = analyzer.analyse(subject)
+                if isinstance(analyzer, SubjectAnalyzer):
+                    analysis = analyzer.analyse_subject(subject)
+                else:
+                    analysis = analyzer.analyse()
+
                 analyses[analyzer.__class__] = analysis
 
         # initial transformation
@@ -41,7 +46,11 @@ class PythonModuleCstTransformerIntegrationTestBase:
 
         if analyzers is not None:
             for analyzer in analyzers:
-                analysis = analyzer.analyse(subject)
+                if isinstance(analyzer, SubjectAnalyzer):
+                    analysis = analyzer.analyse_subject(subject)
+                else:
+                    analysis = analyzer.analyse()
+
                 analyses[analyzer.__class__] = analysis
 
         output_second_pass = transformer.transform(analyses=analyses, subject=subject)
@@ -52,7 +61,11 @@ class PythonModuleCstTransformerIntegrationTestBase:
 
         if analyzers is not None:
             for analyzer in analyzers:
-                analysis = analyzer.analyse(subject)
+                if isinstance(analyzer, SubjectAnalyzer):
+                    analysis = analyzer.analyse_subject(subject)
+                else:
+                    analysis = analyzer.analyse()
+
                 analyses[analyzer.__class__] = analysis
 
         output_third_pass = transformer.transform(analyses=analyses, subject=subject)
