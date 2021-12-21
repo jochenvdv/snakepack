@@ -65,7 +65,8 @@ class Compiler:
     def _transform_assets(self):
         for package in self._packages:
             for bundle in package.bundles.values():
-                tasks = []
+                sync_tasks = []
+                parallel_tasks = []
 
                 for asset in bundle.asset_group.deep_assets:
                     transformers = [
@@ -83,21 +84,33 @@ class Compiler:
                         global_options=self._config
                     )
 
-                    transformers = [*nonbatchable_transformers, batch_transformer]
-
-                    tasks.append(
+                    parallel_tasks.append(
                         Task(
-                            name=f"Transforming '{asset.full_name}'",
+                            name=f"Transforming (simple) '{asset.full_name}'",
+                            callable=partial(
+                                Compiler._transform_asset_parallel,
+                                asset=asset,
+                                transformers=[batch_transformer]
+                            )
+                        )
+                    )
+
+                    sync_tasks.append(
+                        Task(
+                            name=f"Transforming (complex) '{asset.full_name}'",
                             callable=partial(
                                 Compiler._transform_asset,
                                 asset=asset,
-                                transformers=transformers,
+                                transformers=nonbatchable_transformers,
                                 import_analysis=self._loaders[bundle].analysis
                             )
                         )
                     )
 
-                for task in self._executor.execute(tasks):
+                for task in self._executor.execute(sync_tasks, parallel=False):
+                    print('Ok: ' + task.name)
+
+                for task in self._executor.execute(parallel_tasks, parallel=True):
                     print('Ok: ' + task.name)
 
     def _package_assets(self):
@@ -141,6 +154,11 @@ class Compiler:
 
             transformer.transform(analyses=analyses, subject=asset)
 
+    @staticmethod
+    def _transform_asset_parallel(asset, transformers):
+        for transformer in transformers:
+            transformer.transform(analyses=[], subject=asset)
+
 
 T = TypeVar('T')
 
@@ -166,25 +184,29 @@ class Task:
 
 class Executor(ABC):
     @abstractmethod
-    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
+    def execute(self, tasks: Iterable[Task], parallel: bool) -> Iterable[Task]:
         raise NotImplemented
 
 
 class SynchronousExecutor(Executor):
-    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
+    def execute(self, tasks: Iterable[Task], parallel: bool = False) -> Iterable[Task]:
         return map(
             lambda x: x.run(),
             tasks
         )
 
 
-class MultiProcessExecutor(Executor):
-    def __init__(self):
+class ConcurrentExecutor(Executor):
+    def __init__(self, sync_executor: SynchronousExecutor):
+        self._sync_executor = sync_executor
         os.environ['LOKY_PICKLER'] = 'cloudpickle'
         self._executor = get_reusable_executor()
 
-    def execute(self, tasks: Iterable[Task]) -> Iterable[Task]:
-        return self._executor.map(
-            lambda x: x.run(),
-            tasks
-        )
+    def execute(self, tasks: Iterable[Task], parallel: bool = False) -> Iterable[Task]:
+        if parallel:
+            return self._executor.map(
+                lambda x: x.run(),
+                tasks
+            )
+
+        return self._sync_executor.execute(tasks)

@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 
 from snakepack.bundlers.generic import FileBundler
-from snakepack.compiler import Compiler, SynchronousExecutor, MultiProcessExecutor
+from snakepack.compiler import Compiler, SynchronousExecutor, ConcurrentExecutor
 from snakepack.config._base import register_components
 from snakepack.config.parsing import parse_yaml_config
 from snakepack.loaders.python import ImportGraphLoader
@@ -30,7 +30,7 @@ def snakepack(base_dir, parallel=False):
     config = parse_yaml_config(config_yaml)
 
     if parallel:
-        executor = MultiProcessExecutor()
+        executor = ConcurrentExecutor(sync_executor=SynchronousExecutor())
     else:
         executor = SynchronousExecutor()
 
