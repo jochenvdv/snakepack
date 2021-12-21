@@ -5,10 +5,10 @@ from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine
     BaseNumber, BaseString, Tuple, BaseList, BaseSet, BaseDict
 
 from snakepack.analyzers.python.literals import LiteralDuplicationAnalyzer
-from snakepack.transformers.python._base import PythonModuleTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemoveLiteralStatementsTransformer(PythonModuleTransformer):
+class RemoveLiteralStatementsTransformer(BatchablePythonModuleTransformer):
     REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
         LiteralDuplicationAnalyzer
     ]

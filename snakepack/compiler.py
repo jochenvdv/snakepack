@@ -21,6 +21,7 @@ from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
 from snakepack.loaders import Loader
 from snakepack.packagers import Package
 from snakepack.transformers import Transformer
+from snakepack.transformers.python._base import BatchablePythonModuleTransformer, BatchPythonModuleTransformer
 
 
 class Compiler:
@@ -72,6 +73,17 @@ class Compiler:
                         for transformer in bundle.transformers
                         if not any(map(lambda x: asset.matches(x), transformer.options.excludes))
                     ]
+
+                    batchable_transformers = [t for t in transformers if
+                                              isinstance(t, BatchablePythonModuleTransformer)]
+                    nonbatchable_transformers = [t for t in transformers if
+                                                 not isinstance(t, BatchablePythonModuleTransformer)]
+                    batch_transformer = BatchPythonModuleTransformer(
+                        batchable_transformers,
+                        global_options=self._config
+                    )
+
+                    transformers = [*nonbatchable_transformers, batch_transformer]
 
                     tasks.append(
                         Task(

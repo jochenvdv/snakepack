@@ -3,10 +3,10 @@ from typing import Optional, Union
 from libcst import CSTTransformer, Comment, RemovalSentinel, Annotation, FunctionDef, BaseStatement, FlattenSentinel, \
     Param, MaybeSentinel, AnnAssign, BaseSmallStatement, AssignTarget, Assign, Name
 
-from snakepack.transformers.python._base import PythonModuleTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemoveAnnotationsTransformer(PythonModuleTransformer):
+class RemoveAnnotationsTransformer(BatchablePythonModuleTransformer):
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_FunctionDef(
                 self, original_node: FunctionDef, updated_node: FunctionDef

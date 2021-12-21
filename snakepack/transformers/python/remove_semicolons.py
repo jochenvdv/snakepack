@@ -3,10 +3,10 @@ from typing import Optional, Union
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel
 
-from snakepack.transformers.python._base import PythonModuleTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemoveSemicolonsTransformer(PythonModuleTransformer):
+class RemoveSemicolonsTransformer(BatchablePythonModuleTransformer):
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_SimpleStatementLine(
                 self, original_node: SimpleStatementLine, updated_node: SimpleStatementLine

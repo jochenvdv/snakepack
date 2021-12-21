@@ -2,10 +2,10 @@ from typing import Optional, Union
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, Parameters, ParamSlash, MaybeSentinel, ParamStar
 
-from snakepack.transformers.python._base import PythonModuleTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemoveParameterSeparatorsTransformer(PythonModuleTransformer):
+class RemoveParameterSeparatorsTransformer(BatchablePythonModuleTransformer):
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def leave_Parameters(self, original_node: Parameters, updated_node: Parameters) -> Parameters:
             updated_params = []

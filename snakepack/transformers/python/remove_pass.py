@@ -3,10 +3,10 @@ from typing import Optional, Union
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, FunctionDef, SimpleStatementSuite, IndentedBlock, Pass, BaseSmallStatement, Expr, Integer
 
-from snakepack.transformers.python._base import PythonModuleTransformer
+from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemovePassTransformer(PythonModuleTransformer):
+class RemovePassTransformer(BatchablePythonModuleTransformer):
     class _CstTransformer(PythonModuleTransformer._CstTransformer):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
