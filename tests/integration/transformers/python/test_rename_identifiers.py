@@ -1,8 +1,10 @@
 from textwrap import dedent
+from typing import Iterable
 from unittest.mock import MagicMock
 
 from libcst import parse_module
 
+from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
@@ -12,52 +14,48 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
-    def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    x = 5;
-                    def foo(attr, anattr):
-                        pass
-                    def bar(attr, anattr):
-                        return b(attr, anattr)
-                    class Class(object):
-                        attr = 'foo'
-                    foo(x);
-                    y = 6
-                    a = x + y
-                    Class.attr = 'bar'
-                    def imported(a, b, c):
-                        o = True
-                    """
-                )
-            )
-        )
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    a = 5;
-                    def b(a, b):
-                        pass
-                    def c(a, c):
-                        return b(a, c)
-                    class d(object):
-                        attr = 'foo'
-                    b(a);
-                    e = 6
-                    f = a + e
-                    d.attr = 'bar'
-                    def imported(a, b, c):
-                        d = True
-                    """
-                )
-            )
-        )
-        global_options = GlobalOptions()
-        transformer = RenameIdentifiersTransformer(global_options=global_options)
+    _TRANSFORMER_CLASS = RenameIdentifiersTransformer
 
+    def test_transform(self):
+        input_content = dedent(
+            """
+            x = 5;
+            def foo(attr, anattr):
+                pass
+            def bar(attr, anattr):
+                return b(attr, anattr)
+            class Class(object):
+                attr = 'foo'
+            foo(x);
+            y = 6
+            a = x + y
+            Class.attr = 'bar'
+            def imported(a, b, c):
+                o = True
+            """
+        )
+
+        expected_output_content = dedent(
+            """
+            a = 5;
+            def b(a, b):
+                pass
+            def c(a, c):
+                return b(a, c)
+            class d(object):
+                attr = 'foo'
+            b(a);
+            e = 6
+            f = a + e
+            d.attr = 'bar'
+            def imported(a, b, c):
+                d = True
+            """
+        )
+
+        self._test_transformation(input=input_content, expected_output=expected_output_content)
+
+    def _create_analyzers(self) -> Iterable[Analyzer]:
         def _get_importing_modules(module, identifier):
             if identifier == 'imported':
                 return [
@@ -71,12 +69,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
         import_graph_analyzer = MagicMock(spec=ImportGraphAnalyzer)
         import_graph_analyzer.analyse.return_value = import_graph_analysis
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[
-                ScopeAnalyzer(),
-                import_graph_analyzer
-            ]
-        )
+        return [
+            ScopeAnalyzer(),
+            import_graph_analyzer
+        ]

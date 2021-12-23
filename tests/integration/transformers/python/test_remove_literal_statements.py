@@ -10,53 +10,40 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RemoveLiteralStatementsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+    _TRANSFORMER_CLASS = RemoveLiteralStatementsTransformer
+
     def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    def foo():
-                        \"\"\" foo \"\"\"
-                        0
-                        def nested():
-                            400
-                            200
-                        pass
-                    
-                    if True:
-                        2; print('ok')
-                    
-                    try: 0
-                    except: 1; print('ok')
-                    """
-                )
-            )
+        input_content = dedent(
+            """
+            def foo():
+                \"\"\" foo \"\"\"
+                0
+                def nested():
+                    400
+                    200
+                pass
+            
+            if True:
+                2; print('ok')
+            
+            try: 0
+            except: 1; print('ok')
+            """
         )
 
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    def foo():
-                        def nested():
-                            0
-                        pass
-                        
-                    if True:
-                        print('ok')
-                        
-                    try: 0
-                    except: print('ok')
-                    """
-                )
-            )
+        expected_output_content = dedent(
+            """
+            def foo():
+                def nested():
+                    0
+                pass
+                
+            if True:
+                print('ok')
+                
+            try: 0
+            except: print('ok')
+            """
         )
-        global_options = GlobalOptions()
-        transformer = RemoveLiteralStatementsTransformer(global_options=global_options)
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[ScopeAnalyzer()]
-        )
+        self._test_transformation(input=input_content, expected_output=expected_output_content)

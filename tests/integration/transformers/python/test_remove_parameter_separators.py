@@ -10,45 +10,33 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RemoveParameterSeparatorsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
-    def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    def func(a, b, /, c, d, *args, e, f, **kwargs): pass
-                    def func(a, b, /, c, d, *, e, f, **kwargs): pass
-                    def func(a, b, /, c, d, e, f, **kwargs): pass
-                    def func(a, b, c, d, *, e, f, **kwargs): pass
-                    _ = lambda a, b, /, c, d, *args, e, f, **kwargs: None
-                    _ = lambda a, b, /, c, d, *, e, f, **kwargs: None
-                    _ = lambda a, b, /, c, d, e, f, **kwargs: None
-                    _ = lambda a, b, c, d, *, e, f, **kwargs: None
-                    """
-                )
-            )
-        )
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    def func(a, b, c, d, *args, e, f, **kwargs): pass
-                    def func(a, b, c, d, e, f, **kwargs): pass
-                    def func(a, b, c, d, e, f, **kwargs): pass
-                    def func(a, b, c, d, e, f, **kwargs): pass
-                    _ = lambda a, b, c, d, *args, e, f, **kwargs: None
-                    _ = lambda a, b, c, d, e, f, **kwargs: None
-                    _ = lambda a, b, c, d, e, f, **kwargs: None
-                    _ = lambda a, b, c, d, e, f, **kwargs: None
-                    """
-                )
-            )
-        )
-        global_options = GlobalOptions()
-        transformer = RemoveParameterSeparatorsTransformer(global_options=global_options)
+    _TRANSFORMER_CLASS = RemoveParameterSeparatorsTransformer
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[ScopeAnalyzer()]
+    def test_transform(self):
+        input_content = dedent(
+            """
+            def func(a, b, /, c, d, *args, e, f, **kwargs): pass
+            def func(a, b, /, c, d, *, e, f, **kwargs): pass
+            def func(a, b, /, c, d, e, f, **kwargs): pass
+            def func(a, b, c, d, *, e, f, **kwargs): pass
+            _ = lambda a, b, /, c, d, *args, e, f, **kwargs: None
+            _ = lambda a, b, /, c, d, *, e, f, **kwargs: None
+            _ = lambda a, b, /, c, d, e, f, **kwargs: None
+            _ = lambda a, b, c, d, *, e, f, **kwargs: None
+            """
         )
+
+        expected_output_content = dedent(
+            """
+            def func(a, b, c, d, *args, e, f, **kwargs): pass
+            def func(a, b, c, d, e, f, **kwargs): pass
+            def func(a, b, c, d, e, f, **kwargs): pass
+            def func(a, b, c, d, e, f, **kwargs): pass
+            _ = lambda a, b, c, d, *args, e, f, **kwargs: None
+            _ = lambda a, b, c, d, e, f, **kwargs: None
+            _ = lambda a, b, c, d, e, f, **kwargs: None
+            _ = lambda a, b, c, d, e, f, **kwargs: None
+            """
+        )
+
+        self._test_transformation(input=input_content, expected_output=expected_output_content)

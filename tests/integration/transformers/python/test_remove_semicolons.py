@@ -10,39 +10,27 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RemoveSemicolonsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
-    def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    x = 5;
-                    foo();
-                    x=4;x=3;
-                    a:int=3;
-                    assert True;
-                    """
-                )
-            )
-        )
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    x = 5
-                    foo()
-                    x=4;x=3
-                    a:int=3
-                    assert True
-                    """
-                )
-            )
-        )
-        global_options = GlobalOptions()
-        transformer = RemoveSemicolonsTransformer(global_options=global_options)
+    _TRANSFORMER_CLASS = RemoveSemicolonsTransformer
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[ScopeAnalyzer()]
+    def test_transform(self):
+        input_content = dedent(
+            """
+            x = 5;
+            foo();
+            x=4;x=3;
+            a:int=3;
+            assert True;
+            """
         )
+
+        expected_output_content = dedent(
+            """
+            x = 5
+            foo()
+            x=4;x=3
+            a:int=3
+            assert True
+            """
+        )
+
+        self._test_transformation(input=input_content, expected_output=expected_output_content)

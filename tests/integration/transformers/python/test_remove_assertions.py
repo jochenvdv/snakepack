@@ -10,32 +10,20 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class RemoveAssertionsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
-    def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    assert False, 'not ok'
-                    x=5; assert True, 'bad'
-                    """
-                )
-            )
-        )
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    x=5; 
-                    """
-                )
-            )
-        )
-        global_options = GlobalOptions()
-        transformer = RemoveAssertionsTransformer(global_options=global_options)
+    _TRANSFORMER_CLASS = RemoveAssertionsTransformer
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[ScopeAnalyzer()]
+    def test_transform(self):
+        input_content = dedent(
+            """
+            assert False, 'not ok'
+            x=5; assert True, 'bad'
+            """
         )
+
+        expected_output_content = dedent(
+            """
+            x=5; 
+            """
+        )
+
+        self._test_transformation(input=input_content, expected_output=expected_output_content)

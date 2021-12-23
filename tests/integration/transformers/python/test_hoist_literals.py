@@ -1,8 +1,10 @@
 from textwrap import dedent
+from typing import Iterable
 
 import pytest
 from libcst import parse_module
 
+from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.literals import LiteralDuplicationAnalyzer
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
@@ -12,62 +14,52 @@ from tests.integration.transformers.python._base import PythonModuleCstTransform
 
 
 class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrationTestBase):
+    _TRANSFORMER_CLASS = HoistLiteralsTransformer
+
     def test_transform(self):
-        input_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    foo('some_long_string', x['some_long_string'])
-                    bar('some_long_string')
-                    foo('s', x['s'])
-                    foo('r', 'r', 'r')
-                    x = 'assigned'
-                    foo('assigned', 'assigned', 'assigned')
-                    bar('hello', 'hello', 'hello')
-                    z = 'hello'
-                    p = 'test'
-                    def test():
-                        o = 'nope'
-                    def func(a, b):
-                        print(p)
-                        print('nope')
-                    """
-                )
-            )
+        input_content = dedent(
+            """
+            foo('some_long_string', x['some_long_string'])
+            bar('some_long_string')
+            foo('s', x['s'])
+            foo('r', 'r', 'r')
+            x = 'assigned'
+            foo('assigned', 'assigned', 'assigned')
+            bar('hello', 'hello', 'hello')
+            z = 'hello'
+            p = 'test'
+            def test():
+                o = 'nope'
+            def func(a, b):
+                print(p)
+                print('nope')
+            """
         )
 
-        expected_output_content = PythonModuleCst(
-            cst=parse_module(
-                dedent(
-                    """
-                    a='some_long_string'; b='r'; c='hello'; d='nope'
-                    foo(a, x[a])
-                    bar(a)
-                    foo('s', x['s'])
-                    foo(b, b, b)
-                    x = 'assigned'
-                    foo(x, x, x)
-                    bar(c, c, c)
-                    z = c
-                    p = 'test'
-                    def test():
-                        o = d
-                    def func(a, b):
-                        print(p)
-                        print(d)
-                    """
-                )
-            )
+        expected_output_content = dedent(
+            """
+            a='some_long_string'; b='r'; c='hello'; d='nope'
+            foo(a, x[a])
+            bar(a)
+            foo('s', x['s'])
+            foo(b, b, b)
+            x = 'assigned'
+            foo(x, x, x)
+            bar(c, c, c)
+            z = c
+            p = 'test'
+            def test():
+                o = d
+            def func(a, b):
+                print(p)
+                print(d)
+            """
         )
-        global_options = GlobalOptions()
-        transformer = HoistLiteralsTransformer(global_options=global_options)
 
-        self._test_transformation(
-            transformer=transformer,
-            input=input_content,
-            expected_output=expected_output_content,
-            analyzers=[
-                LiteralDuplicationAnalyzer(),
-                ScopeAnalyzer()
-            ]
-        )
+        self._test_transformation(input=input_content, expected_output=expected_output_content)
+
+    def _create_analyzers(self) -> Iterable[Analyzer]:
+        return [
+            LiteralDuplicationAnalyzer(),
+            ScopeAnalyzer()
+        ]

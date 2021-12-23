@@ -248,7 +248,7 @@ class RemoveWhitespaceTransformer(BatchablePythonModuleTransformer):
 
         def leave_Comment(self, original_node: Comment, updated_node: Comment) -> Comment:
             return updated_node.with_changes(
-                value=f"#{updated_node.value.strip('#').strip()}"
+                value=f"#{updated_node.value[1:].strip()}"
             )
 
         def leave_Asynchronous(self, original_node: Asynchronous, updated_node: Asynchronous) -> Asynchronous:
