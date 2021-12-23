@@ -5,7 +5,7 @@ from snakepack.app import snakepack
 
 class SnakepackAcceptanceTest:
     @pytest.mark.skip
-    def test_compile_self(self, cli_runner):
+    def test_compile_snakepack_as_application(self, cli_runner):
         result = cli_runner.invoke(snakepack, args=[])
         print(result.output)
 

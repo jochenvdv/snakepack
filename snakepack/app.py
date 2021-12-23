@@ -16,12 +16,11 @@ register_components()
 
 
 @click.command()
-@click.argument('base_dir', required=False, type=click.Path(exists=True, file_okay=False, resolve_path=True))
+@click.argument('base_dir', required=False, default=Path('.').resolve(), type=click.Path(exists=True, file_okay=False, resolve_path=True))
+@click.option('-c', '--config-file', required=False, type=click.Path(exists=True, dir_okay=False, resolve_path=True))
 @click.option('-p', '--parallel', required=False, default=False, is_flag=True)
-def snakepack(base_dir, parallel=False):
-    if base_dir is None:
-        config_file = Path('.') / DEFAULT_CONFIG_FILE
-    else:
+def snakepack(base_dir, config_file=None, parallel=False):
+    if config_file is None:
         config_file = Path(base_dir) / DEFAULT_CONFIG_FILE
 
     with open(config_file) as f:
