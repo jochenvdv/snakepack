@@ -14,6 +14,7 @@ from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.assets._base import FileContentSource
 from snakepack.assets.python import PythonModule, PythonApplication, PythonPackage
 from snakepack.config.options import Options
+from snakepack.config.types import FullyQualifiedPythonName
 from snakepack.loaders import Loader
 
 
@@ -45,6 +46,45 @@ class ImportGraphLoader(Loader):
     __config_name__ = 'import_graph'
 
 
+class PackageLoader(Loader):
+    def load(self) -> PythonPackage:
+        pkg_name = self._options.pkg_name.module_path[0]
+        pkg_path = self._global_options.source_base_path / pkg_name
+
+        python_pkg = self._load_package(pkg_name, pkg_path)
+
+        return python_pkg
+
+    @staticmethod
+    def _load_package(pkg_name, pkg_path: Path):
+        subpackages = []
+        modules = []
+        package = PythonPackage(full_name=pkg_name, subpackages=subpackages, modules=modules)
+
+        for path in pkg_path.iterdir():
+            full_name = f'{pkg_name}.{path.stem}'
+
+            if path.is_dir() and (path / '__init__.py').is_file():
+                # subpackage
+                subpackages.append(PackageLoader._load_package(full_name, path))
+            elif path.suffix == '.py':
+                # module
+                modules.append(
+                    PythonModule(
+                        full_name=full_name,
+                        source=FileContentSource(path=path)
+                    )
+                )
+
+        return package
+
+    class Options(Options):
+        pkg_name: FullyQualifiedPythonName
+
+    __config_name__ = 'package'
+
+
 __all__ = [
-    ImportGraphLoader
+    ImportGraphLoader,
+    PackageLoader
 ]

@@ -19,8 +19,16 @@ from snakepack.transformers.python._base import PythonModuleTransformer
 class PythonModuleCstTransformerIntegrationTestBase:
     _TRANSFORMER_CLASS = NotImplemented
 
-    @settings(suppress_health_check=[HealthCheck.too_slow])
-    @given(input=from_grammar().filter(lambda x: x != '\n \x0cpass#'))
+    _EXCLUDED_EXAMPLES = {
+        '\n \x0cpass#',
+        '\n\\\n#'
+    }
+
+    @settings(suppress_health_check=[
+        HealthCheck.too_slow,
+        HealthCheck.filter_too_much
+    ])
+    @given(input=from_grammar().filter(lambda x: x not in PythonModuleCstTransformerIntegrationTestBase._EXCLUDED_EXAMPLES))
     def test_randomly_generated_code(self, input):
         transformer = self._create_transformer()
         analyzers = self._create_analyzers()
