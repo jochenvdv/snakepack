@@ -5,7 +5,7 @@ description = ""
 authors = ["Jochen Van de Velde <mail@jochenvandevelde.be>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.7, <=3.10"
 libcst = "^0.3.21"
 boltons = "^21.0.0"
 pydantic = "^1.8.2"
