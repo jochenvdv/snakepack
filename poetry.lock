@@ -406,6 +406,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "stdlib-list"
+version = "0.8.0"
+description = "A list of Python Standard Libraries (2.6-7, 3.2-9)."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+develop = ["sphinx"]
+
+[[package]]
 name = "termcolor"
 version = "1.1.0"
 description = "ANSII Color formatting for output in terminal."
@@ -456,7 +467,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "dcdb6f976f325ba1bb7f5e6cdf0e1083316ed87557054c46033b806441443034"
+content-hash = "ddbf318bcaf62a4cdc5a009c6a2e33f46b80e7cf3796c10bd7187c71d06419b9"
 
 [metadata.files]
 altgraph = [
@@ -694,6 +705,10 @@ pyyaml = [
 sortedcontainers = [
     {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
     {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
+]
+stdlib-list = [
+    {file = "stdlib-list-0.8.0.tar.gz", hash = "sha256:a1e503719720d71e2ed70ed809b385c60cd3fb555ba7ec046b96360d30b16d9f"},
+    {file = "stdlib_list-0.8.0-py3-none-any.whl", hash = "sha256:2ae0712a55b68f3fbbc9e58d6fa1b646a062188f49745b495f94d3310a9fdd3e"},
 ]
 termcolor = [
     {file = "termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"},

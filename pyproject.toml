@@ -14,6 +14,7 @@ click = "^8.0.3"
 modulegraph = "^0.19.2"
 cloudpickle = "^2.0.0"
 loky = "^3.0.0"
+stdlib-list = "^0.8.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0.0"
