@@ -50,5 +50,8 @@ envlist = py38,py39
 [testenv]
 poetry_experimental_add_locked_dependencies = True
 poetry_add_dev_dependencies = True
-commands = pytest -n auto
+commands =
+    pytest -k "not IntegrationTest and not AcceptanceTest"
+    pytest -n auto -k "IntegrationTest"
+    pytest -n auto -k "AcceptanceTest"
 """
