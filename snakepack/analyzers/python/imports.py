@@ -135,7 +135,7 @@ class ImportGraphAnalyzer(LoadingAnalyzer):
         return asset
 
     @staticmethod
-    @functools.cache
+    @functools.lru_cache()
     def _is_stdlib(module_name: str, file_path: Path, python_version) -> bool:
         global _STDLIB_MODULES
 
@@ -172,7 +172,7 @@ class ImportGraphAnalyzer(LoadingAnalyzer):
         def application(self) -> PythonApplication:
             return self._application
 
-        @functools.cache
+        @functools.lru_cache()
         def get_importing_modules(self, module: PythonModule, identifier: Optional[str] = None) -> Iterable[PythonModule]:
             importing_nodes = self._module_graph.getReferers(self._node_map[module])
             importing_modules = [

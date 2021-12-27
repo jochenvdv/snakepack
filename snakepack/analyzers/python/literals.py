@@ -23,18 +23,18 @@ class LiteralDuplicationAnalyzer(PythonModuleCstAnalyzer):
             raise NotImplementedError
 
     class Analysis(PythonModuleCstAnalyzer.Analysis):
-        @functools.cache
+        @functools.lru_cache()
         def get_occurrences(self, literal_node: SimpleString) -> Optional[int]:
             if literal_node not in self._metadata[LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider]:
                 return None
 
             return self._metadata[LiteralDuplicationAnalyzer._LiteralDuplicationCountProvider][literal_node]
 
-        @functools.cache
+        @functools.lru_cache()
         def is_part_of_concatenated_string(self, literal_node: SimpleString) -> bool:
             return isinstance(self._metadata[ParentNodeProvider][literal_node], ConcatenatedString)
 
-        @functools.cache
+        @functools.lru_cache()
         def get_preceding_assignments(
                 self,
                 literal_node: SimpleString,

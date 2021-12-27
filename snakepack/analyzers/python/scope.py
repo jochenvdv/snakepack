@@ -29,7 +29,7 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
             raise NotImplementedError
 
     class Analysis(PythonModuleCstAnalyzer.Analysis):
-        @functools.cache
+        @functools.lru_cache()
         def get_fully_qualified_names(
                 self, module: PythonModule, node: Union[Name, Attribute, ClassDef, FunctionDef]
         ) -> Iterable[FullyQualifiedPythonName]:
@@ -42,14 +42,14 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
                 )
             )
 
-        @functools.cache
+        @functools.lru_cache()
         def is_attribute(self, node: Name) -> bool:
             return (
                     isinstance(self._metadata[ParentNodeProvider][node], Attribute)
                     or isinstance(self.get_scope_for_node(node), ClassScope)
             )
 
-        @functools.cache
+        @functools.lru_cache()
         def get_scope_for_node(self, node: CSTNode) -> Scope:
             current_node = node
 
