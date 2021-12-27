@@ -32,6 +32,7 @@ class PythonVersion(Enum):
     PYTHON_37 = '3.7'
     PYTHON_38 = '3.8'
     PYTHON_39 = '3.9'
+    PYTHON_310 = '3.10'
 
     @classmethod
     def current(cls) -> PythonVersion:
