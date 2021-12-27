@@ -41,7 +41,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                 return updated_node
 
             # check if assignment exists for this value
-            scope = self._analyses[ScopeAnalyzer][ScopeProvider][original_node]
+            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(original_node)
             assignments = self._analyses[LiteralDuplicationAnalyzer].get_preceding_assignments(
                 literal_node=original_node,
                 scope=scope
@@ -49,7 +49,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
             if (
                     assignments is not None and len(assignments) > 0
-                    and all(map(lambda x: self._analyses[ScopeAnalyzer][ScopeProvider][x] is scope, occurrences))
+                    and all(map(lambda x: self._analyses[ScopeAnalyzer].get_scope_for_node(x) is scope, occurrences))
             ):
                 # use existing assigned identifier
                 use_existing_assignment = True
@@ -86,7 +86,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
                 if (
                         original_node in map(lambda x: x.value, flatten(map(lambda x: x[1], assignments.items())))
-                        and all(map(lambda x: self._analyses[ScopeAnalyzer][ScopeProvider][x] is scope, occurrences))
+                        and all(map(lambda x: self._analyses[ScopeAnalyzer].get_scope_for_node(x) is scope, occurrences))
                 ):
                     # do not replace literal with a reference in the first in-scope assignment itself
                     return updated_node
