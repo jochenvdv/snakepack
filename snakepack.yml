@@ -1,0 +1,27 @@
+packages:
+  snakepack:
+    packager:
+      name: directory
+      options:
+        target_path: 'snakepack/'
+    bundles:
+      snakepack:
+        bundler:
+          name: file
+          options:
+        loader:
+          name: import_graph
+          options:
+            entry_point: 'snakepack/__main__.py'
+        transformers:
+          - name: remove_comments
+          - name: remove_assertions
+          - name: remove_whitespace
+          - name: remove_semicolons
+          - name: remove_pass
+          - name: remove_object_base
+          - name: remove_parameter_separators
+          - name: remove_literal_statements
+          - name: remove_annotations
+          - name: hoist_literals
+          - name: rename_identifiers
