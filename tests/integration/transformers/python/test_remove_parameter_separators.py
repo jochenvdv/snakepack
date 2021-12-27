@@ -19,6 +19,9 @@ class RemoveParameterSeparatorsTransformerIntegrationTest(PythonModuleCstTransfo
             def func(a, b, /, c, d, *, e, f, **kwargs): pass
             def func(a, b, /, c, d, e, f, **kwargs): pass
             def func(a, b, c, d, *, e, f, **kwargs): pass
+            def func(a, b, c, d=None, *, e, f, **kwargs): pass
+            def func(a, b, c, d, e, f=None, **kwargs): pass
+            def func(*, e=None, f): pass
             _ = lambda a, b, /, c, d, *args, e, f, **kwargs: None
             _ = lambda a, b, /, c, d, *, e, f, **kwargs: None
             _ = lambda a, b, /, c, d, e, f, **kwargs: None
@@ -32,6 +35,9 @@ class RemoveParameterSeparatorsTransformerIntegrationTest(PythonModuleCstTransfo
             def func(a, b, c, d, e, f, **kwargs): pass
             def func(a, b, c, d, e, f, **kwargs): pass
             def func(a, b, c, d, e, f, **kwargs): pass
+            def func(a, b, c, d=None, *, e, f, **kwargs): pass
+            def func(a, b, c, d, e, f=None, **kwargs): pass
+            def func(*, e=None, f): pass
             _ = lambda a, b, c, d, *args, e, f, **kwargs: None
             _ = lambda a, b, c, d, e, f, **kwargs: None
             _ = lambda a, b, c, d, e, f, **kwargs: None

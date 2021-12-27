@@ -18,11 +18,23 @@ class RemoveParameterSeparatorsTransformer(BatchablePythonModuleTransformer):
 
             updated_params.extend(original_node.params)
 
-            if isinstance(original_node.star_arg, ParamStar):
-                #  convert keyword-only parameters to normal parameters
-                updated_star_arg = MaybeSentinel.DEFAULT
-                updated_kwonly_params = []
-                updated_params.extend(original_node.kwonly_params)
+            if isinstance(original_node.star_arg, ParamStar) and all(map(lambda x: x.default is None, updated_params)):
+                #  convert keyword-only parameters to normal parameters if no defaults are used
+                kwonly_params_default_seen = False
+                remove_param_star = True
+
+                for param in updated_node.kwonly_params:
+                    if param.default is not None:
+                        kwonly_params_default_seen = True
+                    elif kwonly_params_default_seen:
+                        # keyword only parameter without default following after one with default
+                        # this means we cannot remove the param star
+                        remove_param_star = False
+
+                if remove_param_star:
+                    updated_star_arg = MaybeSentinel.DEFAULT
+                    updated_kwonly_params = []
+                    updated_params.extend(original_node.kwonly_params)
 
             return updated_node.with_changes(
                 posonly_params=[],
