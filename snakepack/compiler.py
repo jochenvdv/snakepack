@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import traceback
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from concurrent.futures import ProcessPoolExecutor
@@ -152,7 +153,11 @@ class Compiler:
             if import_analysis_required:
                 analyses[ImportGraphAnalyzer] = import_analysis
 
-            transformer.transform(analyses=analyses, subject=asset)
+            try:
+                transformer.transform(analyses=analyses, subject=asset)
+            except Exception as e:
+                traceback.print_exc()
+                raise e
 
     @staticmethod
     def _transform_asset_parallel(asset, transformers):

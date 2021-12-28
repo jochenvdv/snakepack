@@ -113,7 +113,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
 
         def _is_referenced(self, node: CSTNode, identifier: str) -> bool:
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
-            assert identifier in scope
+            #assert identifier in scope
 
             if identifier in scope.accesses:
                 return True
