@@ -1,0 +1,2 @@
+test_id,pytest_obj,status,duration_ms
+tests/acceptance/test_snakepack.py::SnakepackAcceptanceTest::test_snakepack_as_application_with_all_transformers,<bound method SnakepackAcceptanceTest.test_snakepack_as_application_with_all_transformers of <tests.acceptance.test_snakepack.SnakepackAcceptanceTest object at 0x11581e490>>,failed,22772.510639

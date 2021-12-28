@@ -5,7 +5,7 @@ import click
 from snakepack.bundlers.generic import FileBundler
 from snakepack.compiler import Compiler, SynchronousExecutor, ConcurrentExecutor
 from snakepack.config._base import register_components
-from snakepack.config.parsing import parse_yaml_config
+from snakepack.config.formats import parse_yaml_config
 from snakepack.loaders.python import ImportGraphLoader
 from snakepack.packagers.generic import DirectoryPackager
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer
