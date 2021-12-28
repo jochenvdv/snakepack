@@ -52,6 +52,6 @@ poetry_experimental_add_locked_dependencies = True
 poetry_add_dev_dependencies = True
 commands =
     pytest -k "not IntegrationTest and not AcceptanceTest"
-    pytest -n auto -k "IntegrationTest"
+    pytest -k "IntegrationTest" -m "not hypothesis"
     pytest -n auto -k "AcceptanceTest"
 """

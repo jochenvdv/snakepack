@@ -24,6 +24,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
         '\n\\\n#'
     }
 
+    @pytest.mark.hypothesis
     @settings(suppress_health_check=[
         HealthCheck.too_slow,
         HealthCheck.filter_too_much
