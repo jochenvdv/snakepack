@@ -106,15 +106,18 @@ class BaseAcceptanceTest:
 
         # run Snakepack
         if roundtrip:
+            main_module = config.source_base_path / 'snakepack/__main__.py'
+            main_module_code = main_module.read_text()
+            main_module_code = f"import sys; sys.path.insert(0, '{config.source_base_path}')\n" + main_module_code
+            main_module.write_text(main_module_code)
+
             try:
                 result = subprocess.check_output(
-                    args=[
-                        'python',
-                        config.source_base_path / 'snakepack/__main__.py',
-                        f'--config-file={config_path}'
-                    ],
+                    args=f"PYTHONPATH={config.source_base_path}:$PYTHONPATH python {config.source_base_path / 'snakepack/__main__.py'} --config-file={config_path}",
+                    shell=True,
+                    stderr=subprocess.STDOUT
                 )
-                print(result)
+                print('ok:' + result.decode('utf-8'))
             except subprocess.CalledProcessError as e:
                 print(e.output)
                 pytest.fail('Snakepack round-trip invocation failed')

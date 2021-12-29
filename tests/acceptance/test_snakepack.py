@@ -26,7 +26,6 @@ class SnakepackAcceptanceTest(BaseAcceptanceTest):
         self._test_snakepack(config=config, cli_runner=cli_runner, test_path=test_path)
         self._test_application_compiled_output(test_path=test_path, cli_runner=cli_runner)
 
-    @pytest.mark.skip
     def test_snakepack_as_library_with_all_transformers(self, cli_runner, tmp_path):
         test_path = self._create_test_path(tmp_path)
         config = self._create_library_config(test_path=test_path)
