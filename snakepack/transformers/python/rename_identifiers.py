@@ -3,7 +3,7 @@ from typing import Optional, Union, Dict, Mapping, Type
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
-    GlobalScope
+    GlobalScope, ClassScope
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -86,11 +86,18 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
                 return
 
-            if len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0:
+            if (
+                    self._analyses[ImportGraphAnalyzer].import_graph_known
+                    and len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0
+            ):
                 # don't rename because this identifier is imported in another module
                 return
 
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
+
+            if not self._analyses[ImportGraphAnalyzer].import_graph_known and isinstance(scope, (GlobalScope, ClassScope)):
+                # don't rename because import graph is unknown and node is in global or class scope
+                return
 
             for assignment in scope.assignments[node]:
                 if assignment.name is node.value:

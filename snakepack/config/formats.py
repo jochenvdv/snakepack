@@ -17,7 +17,7 @@ def pythonversion_to_yaml(dumper, data):
 
 
 def fqpn_to_yaml(dumper, data):
-    return dumper.represent_data(str(data.value))
+    return dumper.represent_data(str(data))
 
 
 yaml.add_representer(PosixPath, path_to_yaml)

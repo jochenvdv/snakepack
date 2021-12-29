@@ -7,7 +7,7 @@ from snakepack.bundlers.generic import FileBundler
 from snakepack.config import ConfigException
 from snakepack.config.options import ComponentConfig
 from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
-from snakepack.config.parsing import parse_yaml_config
+from snakepack.config.formats import parse_yaml_config
 from snakepack.loaders.python import ImportGraphLoader
 from snakepack.packagers.generic import DirectoryPackager
 from snakepack.transformers.python.remove_comments import RemoveCommentsTransformer

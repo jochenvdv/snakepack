@@ -11,23 +11,28 @@ from modulegraph.modulegraph import ModuleGraph, Package, Node, Extension, Sourc
 from stdlib_list import stdlib_list
 
 from snakepack.analyzers import Analyzer
-from snakepack.analyzers._base import LoadingAnalyzer, SubjectAnalyzer
+from snakepack.analyzers._base import PreLoadingAnalyzer, SubjectAnalyzer, PostLoadingAnalyzer
 from snakepack.analyzers.python import PythonModuleCstAnalyzer
 from snakepack.assets import Asset, AssetGroup, FileContentSource
 from snakepack.assets.python import PythonPackage, PythonApplication, PythonModule, PythonModuleCst
+from snakepack.config.types import FullyQualifiedPythonName
 
 _STDLIB_PATHS = [Path(path) for path in set(sys.path) - set(getsitepackages())]
 _STDLIB_MODULES = {}
 
 
-class ImportGraphAnalyzer(LoadingAnalyzer):
-    def __init__(self, entry_point_path: Path, target_version: str):
+class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
+    def __init__(self, entry_point_path: Optional[Path], target_version: str):
         self._entry_point_path = entry_point_path
         self._target_version = target_version
-        self._application = None
+        self._asset_group = None
         self._module_graph = None
+        self._modules_metadata = None
+        self._node_map = None
 
     def analyse(self) -> Analyzer.Analysis:
+        assert self._entry_point_path is not None
+
         self._module_graph = find_modules((str(self._entry_point_path),))
         python_modules, c_extensions = parse_mf_results(self._module_graph)
 
@@ -87,25 +92,29 @@ class ImportGraphAnalyzer(LoadingAnalyzer):
             if len(package.full_name.split('.')) == 1
         ]
 
-        self._application = PythonApplication(
+        self._asset_group = PythonApplication(
             entry_point=entry_point,
             packages=packages,
             modules=modules
         )
 
-        modules_metadata = {
+        return self.create_analysis()
+
+    def analyse_assets(self, asset_group: AssetGroup) -> Analyzer.Analysis:
+        self._modules_metadata = {
             module: module.content.metadata_wrapper.resolve_many(self.CST_PROVIDERS)
-            for module in self._application.deep_assets
+            for module in asset_group.deep_assets
         }
+        self._asset_group = asset_group
 
-        return self.create_analysis(modules_metadata)
+        return self.create_analysis()
 
-    def create_analysis(self, modules_metadata: Mapping[PythonModule, MetadataWrapper]) -> PythonModuleCstAnalyzer.Analysis:
+    def create_analysis(self) -> PythonModuleCstAnalyzer.Analysis:
         return self.Analysis(
             module_graph=self._module_graph,
-            application=self._application,
+            asset_group=self._asset_group,
             node_map=self._node_map,
-            import_metadata=modules_metadata
+            import_metadata=self._modules_metadata
         )
 
     @staticmethod
@@ -152,28 +161,39 @@ class ImportGraphAnalyzer(LoadingAnalyzer):
         def __init__(
                 self,
                 module_graph: ModuleGraph,
-                application: PythonApplication,
+                asset_group: Optional[AssetGroup],
                 node_map: Mapping[PythonModule, Node],
                 import_metadata: Mapping[PythonModule, Mapping[CSTNode, Iterable[Union[Import, ImportFrom]]]]
         ):
             self._module_graph = module_graph
-            self._application = application
+            self._asset_group = asset_group
             self._node_map = node_map
-            self._inverted_node_map = {
-                value: key for key, value in node_map.items()
-            }
+
+            if node_map is None:
+                self._inverted_node_map = None
+            else:
+                self._inverted_node_map = {
+                    value: key for key, value in node_map.items()
+                }
+
             self._import_metadata = import_metadata
+
+        @property
+        def asset_group(self) -> Optional[PythonApplication]:
+            return self._asset_group
 
         @property
         def module_graph(self):
             return self._module_graph
 
         @property
-        def application(self) -> PythonApplication:
-            return self._application
+        def import_graph_known(self) -> bool:
+            return self._module_graph is not None
 
         @functools.lru_cache()
         def get_importing_modules(self, module: PythonModule, identifier: Optional[str] = None) -> Iterable[PythonModule]:
+            assert self.import_graph_known
+
             importing_nodes = self._module_graph.getReferers(self._node_map[module])
             importing_modules = [
                     self._inverted_node_map[importing_node] if not isinstance(importing_node, Extension) else importing_node

@@ -12,7 +12,7 @@ from stdlib_list import stdlib_list
 
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.assets._base import FileContentSource
-from snakepack.assets.python import PythonModule, PythonApplication, PythonPackage
+from snakepack.assets.python import PythonModule, PythonApplication, PythonPackage, PythonModuleCst
 from snakepack.config.options import Options
 from snakepack.config.types import FullyQualifiedPythonName
 from snakepack.loaders import Loader
@@ -35,8 +35,9 @@ class ImportGraphLoader(Loader):
         )
 
         self._analysis = analyzer.analyse()
+        self._analysis = analyzer.analyse_assets(self._analysis.asset_group)
 
-        return self._analysis.application
+        return self._analysis.asset_group
 
     class Options(Options):
         entry_point: Path
@@ -47,13 +48,26 @@ class ImportGraphLoader(Loader):
 
 
 class PackageLoader(Loader):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._analysis = None
+
     def load(self) -> PythonPackage:
         pkg_name = self._options.pkg_name.module_path[0]
         pkg_path = self._global_options.source_base_path / pkg_name
 
         python_pkg = self._load_package(pkg_name, pkg_path)
+        analyzer = ImportGraphAnalyzer(
+            entry_point_path=None,
+            target_version=self._options.target_version
+        )
+        self._analysis = analyzer.analyse_assets(python_pkg)
 
         return python_pkg
+
+    @property
+    def analysis(self) -> ImportGraphAnalyzer.Analysis:
+        return self._analysis
 
     @staticmethod
     def _load_package(pkg_name, pkg_path: Path):
@@ -70,9 +84,9 @@ class PackageLoader(Loader):
             elif path.suffix == '.py':
                 # module
                 modules.append(
-                    PythonModule(
+                    PythonModule.from_source(
                         full_name=full_name,
-                        source=FileContentSource(path=path)
+                        source=FileContentSource(path=path, default_content_type=PythonModuleCst)
                     )
                 )
 
@@ -80,6 +94,7 @@ class PackageLoader(Loader):
 
     class Options(Options):
         pkg_name: FullyQualifiedPythonName
+        target_version: str = '3.9'
 
     __config_name__ = 'package'
 

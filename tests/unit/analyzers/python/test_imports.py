@@ -19,7 +19,7 @@ class ImportGraphAnalyzerAnalysisTest:
 
         analysis = ImportGraphAnalyzer.Analysis(
             module_graph=module_graph,
-            application=application,
+            asset_group=application,
             node_map=node_map,
             import_metadata=import_metadata
         )
@@ -59,7 +59,7 @@ class ImportGraphAnalyzerAnalysisTest:
 
         analysis = ImportGraphAnalyzer.Analysis(
             module_graph=module_graph,
-            application=application,
+            asset_group=application,
             node_map=node_map,
             import_metadata=import_metadata
         )
@@ -149,7 +149,7 @@ class ImportGraphAnalyzerAnalysisTest:
 
         analysis = ImportGraphAnalyzer.Analysis(
             module_graph=module_graph,
-            application=application,
+            asset_group=application,
             node_map=node_map,
             import_metadata=import_metadata
         )

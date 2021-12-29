@@ -118,9 +118,12 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
             if identifier in scope.accesses:
                 return True
 
-            if isinstance(scope, GlobalScope):
-                return len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, identifier)) > 0
+            if isinstance(scope, (GlobalScope, ClassScope)):
+                if self._analyses[ImportGraphAnalyzer].import_graph_known:
+                    return len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, identifier)) > 0
 
+                # assume referenced - import graph is not known so we don't touch global scope
+                return True
             return False
 
     __config_name__ = 'remove_unreferenced_code'

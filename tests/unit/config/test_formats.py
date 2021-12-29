@@ -3,7 +3,7 @@ from yaml import YAMLError
 
 from snakepack.config import ConfigException
 from snakepack.config.model import SnakepackConfig
-from snakepack.config.parsing import parse_yaml_config
+from snakepack.config.formats import parse_yaml_config
 
 
 class ParseYamlConfigTest:

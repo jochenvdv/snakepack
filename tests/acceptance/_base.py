@@ -42,7 +42,7 @@ class BaseAcceptanceTest:
 
     def _create_library_config(self, test_path, transformer=None, roundtrip=False):
         loader_config = ComponentConfig(
-            name='python_package',
+            name='package',
             options=PackageLoader.Options(
                 pkg_name=FullyQualifiedPythonName('snakepack')
             )
@@ -64,7 +64,6 @@ class BaseAcceptanceTest:
             target_base_path = test_path / 'dist-initial'
             source_base_path = self._SOURCEDIR
 
-
         config = SnakepackConfig(
             source_base_path=source_base_path,
             target_base_path=target_base_path,
@@ -74,12 +73,7 @@ class BaseAcceptanceTest:
                     bundles={
                         self._SUBJECT_NAME: BundleConfig(
                             bundler=ComponentConfig(name='file'),
-                            loader=ComponentConfig(
-                                name='import_graph',
-                                options=ImportGraphLoader.Options(
-                                    entry_point=self._APPLICATION_ENTRY_POINT
-                                )
-                            ),
+                            loader=loader_config,
                             transformers=[
                                 ComponentConfig(name=transformer_name)
                                 for transformer_name in transformers

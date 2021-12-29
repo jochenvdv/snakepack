@@ -11,9 +11,18 @@ class Analyzer(ABC):
         pass
 
 
-class LoadingAnalyzer(Analyzer, ABC):
+class PreLoadingAnalyzer(Analyzer, ABC):
     @abstractmethod
     def analyse(self) -> Analysis:
+        raise NotImplementedError
+
+    class Analysis(ABC):
+        pass
+
+
+class PostLoadingAnalyzer(Analyzer, ABC):
+    @abstractmethod
+    def analyse_assets(self, asset_group: AssetGroup) -> Analysis:
         raise NotImplementedError
 
     class Analysis(ABC):

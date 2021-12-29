@@ -7,7 +7,7 @@ from boltons.iterutils import flatten
 from libcst import MetadataWrapper
 
 from snakepack.analyzers import Analyzer
-from snakepack.analyzers._base import SubjectAnalyzer, LoadingAnalyzer
+from snakepack.analyzers._base import SubjectAnalyzer, PreLoadingAnalyzer
 from snakepack.assets import Asset, AssetGroup
 from snakepack.assets.python import PythonModule
 

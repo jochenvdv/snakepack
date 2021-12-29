@@ -295,13 +295,7 @@ class RemoveWhitespaceTransformer(BatchablePythonModuleTransformer):
                     updated_node.params.star_kwarg is not None
             )
 
-            try:
-                return self._remove_whitespace(updated_node, 'whitespace_after_lambda', semantic=semantic)
-            except CSTValidationError as e:
-                print(semantic)
-                print(updated_node)
-                print(e)
-                return updated_node
+            return self._remove_whitespace(updated_node, 'whitespace_after_lambda', semantic=semantic)
 
         def leave_Param(
                 self, original_node: Param, updated_node: Param
