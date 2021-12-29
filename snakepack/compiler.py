@@ -64,6 +64,7 @@ class Compiler:
                 bundle.load()
 
     def _transform_assets(self):
+        print(__file__)
         for package in self._packages:
             for bundle in package.bundles.values():
                 sync_tasks = []
