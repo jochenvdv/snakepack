@@ -32,6 +32,10 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             Class.attr = 'bar'
             def imported(a, b, c):
                 o = True
+                
+                def inner():
+                    nonlocal o
+                    print(o)
             """
         )
 
@@ -50,6 +54,10 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             d.attr = 'bar'
             def imported(a, b, c):
                 d = True
+                
+                def e():
+                    nonlocal d
+                    print(d)
             """
         )
 

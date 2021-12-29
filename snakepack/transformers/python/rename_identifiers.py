@@ -1,8 +1,9 @@
 from typing import Optional, Union, Dict, Mapping, Type
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
-    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom
-from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider
+    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal
+from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
+    GlobalScope
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -40,7 +41,8 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             super().__init__(*args, **kwargs)
             self._name_registry = NameRegistry()
             self._renames: Dict[CSTNode, str] = {}
-            self._accesses: Dict[CSTNode, str] = {}
+            self._renames_scope_map: Dict[Scope, Dict[str, str]] = {}
+            self._excluded_names = set()
 
         def visit_Import(self, node: Import) -> Optional[bool]:
             # don't rename import identifiers
@@ -50,9 +52,34 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             # don't rename import identifiers
             return False
 
+        def visit_Nonlocal(self, node: Nonlocal) -> Optional[bool]:
+            # exclude identifiers referenced by nonlocal statements (libcst-limitation)
+            for name_item in node.names:
+                name = name_item.name.value
+
+                if name in self._excluded_names:
+                    continue
+
+                current_scope = None
+
+                while not isinstance(current_scope, GlobalScope):
+                    if current_scope is None:
+                        current_scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
+                    else:
+                        current_scope = current_scope.parent
+
+                    if current_scope in self._renames_scope_map and name in self._renames_scope_map[current_scope]:
+                        # mark nonlocal name for renaming
+                        self._renames[name_item.name] = self._renames_scope_map[current_scope][name]
+                        self._name_registry.register_name_for_scope(scope=current_scope, name=name)
+
         def visit_Name(self, node: Name) -> Optional[bool]:
             if node in self._renames:
                 # already marked this identifier to be renamed
+                return
+
+            if node.value in self._excluded_names:
+                # identifier is excluded from renaming
                 return
 
             if self._analyses[ScopeAnalyzer].is_attribute(node):
@@ -74,13 +101,18 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                         new_name = self._name_registry.generate_name_for_scope(scope=scope)
 
                     self._renames[node] = new_name
+
+                    if scope not in self._renames_scope_map:
+                        self._renames_scope_map[scope] = {}
+
+                    self._renames_scope_map[scope][node.value] = new_name
                     self._name_registry.register_name_for_scope(scope=scope, name=new_name)
 
                     for access in assignment.references:
                         self._renames[access.node] = new_name
 
         def leave_Name(self, original_node: Name, updated_node: Name) -> BaseExpression:
-            if original_node in self._renames:
+            if original_node in self._renames and updated_node.value not in self._excluded_names:
                 return updated_node.with_changes(value=self._renames[original_node])
 
             return updated_node
