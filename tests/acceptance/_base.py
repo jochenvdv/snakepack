@@ -16,11 +16,12 @@ from snakepack.loaders.python import ImportGraphLoader, PackageLoader
 from snakepack.packagers.generic import DirectoryPackager
 from snakepack.transformers.python import __all__ as all_transformers
 
-_ALL_TRANSFORMERS = [transformer.__config_name__ for transformer in all_transformers]
+
+ALL_TRANSFORMERS = [transformer.__config_name__ for transformer in all_transformers]
 
 
 def per_transformer():
-    return pytest.mark.parametrize('transformer', _ALL_TRANSFORMERS)
+    return pytest.mark.parametrize('transformer', ALL_TRANSFORMERS)
 
 
 class BaseAcceptanceTest:
@@ -29,33 +30,31 @@ class BaseAcceptanceTest:
     _APPLICATION_ENTRY_POINT = NotImplemented
     _LIBRARY_PACKAGE = NotImplemented
 
-    def _create_application_config(self, test_path, transformer=None, roundtrip=False):
+    def _create_application_config(self, test_path, transformers=None, roundtrip=False):
         loader_config = ComponentConfig(
             name='import_graph',
             options=ImportGraphLoader.Options(
                 entry_point=self._APPLICATION_ENTRY_POINT
             )
         )
-        config = self._create_config(test_path, loader_config, transformer, roundtrip)
+        config = self._create_config(test_path, loader_config, transformers, roundtrip)
 
         return config
 
-    def _create_library_config(self, test_path, transformer=None, roundtrip=False):
+    def _create_library_config(self, test_path, transformers=None, roundtrip=False):
         loader_config = ComponentConfig(
             name='package',
             options=PackageLoader.Options(
                 pkg_name=FullyQualifiedPythonName('snakepack')
             )
         )
-        config = self._create_config(test_path, loader_config, transformer, roundtrip)
+        config = self._create_config(test_path, loader_config, transformers, roundtrip)
 
         return config
 
-    def _create_config(self, test_path, loader_config, transformer, roundtrip):
-        if transformer is None:
-            transformers = _ALL_TRANSFORMERS
-        else:
-            transformers = [transformer]
+    def _create_config(self, test_path, loader_config, transformers, roundtrip):
+        if transformers is None:
+            transformers = []
 
         if roundtrip:
             target_base_path = test_path / 'dist-roundtrip'
@@ -92,7 +91,7 @@ class BaseAcceptanceTest:
 
         return test_path
 
-    def _test_snakepack(self, cli_runner, test_path: Path, config: SnakepackConfig, roundtrip=False):
+    def _test_snakepack(self, cli_runner, test_path: Path, config: SnakepackConfig, roundtrip=False, results_bag=None, ):
         # create config file
         config_path = test_path / 'config.yml'
         print(generate_yaml_config(config))
@@ -146,15 +145,4 @@ class BaseAcceptanceTest:
 
             pytest.fail(failure_msg)
 
-    def _report_after_metrics(self, test_name, directory):
-        pass
-
-    def _report_metrics(self, test_name, metrics):
-        pass
-
-    def _measure_metrics(self, directory):
-        pass
-
-    @abstractmethod
-    def _test_compiled_output(self, dist_path: Path):
-        raise NotImplemented
+        # calculate metrics
