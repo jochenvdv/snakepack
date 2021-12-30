@@ -14,15 +14,14 @@ class PythonTest:
 class PythonModuleTest:
     def test_init(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        module = PythonModule(name='some.test.module', content=content, source=None)
 
-        assert module.full_name == 'some.test.module'
-        assert module.name == 'module'
+        assert module.name == 'some.test.module'
         assert module.content is content
 
     def test_matches_returns_true_when_selector_is_full_module_name(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        module = PythonModule(name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
         selector.module_path = ['some', 'test', 'module']
@@ -31,7 +30,7 @@ class PythonModuleTest:
 
     def test_matches_returns_true_when_selector_is_identifier(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        module = PythonModule(name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = False
         selector.has_ident_path = False
@@ -40,7 +39,7 @@ class PythonModuleTest:
 
     def test_matches_returns_false_when_selector_is_package(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        module = PythonModule(name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
         selector.has_ident_path = False
@@ -50,7 +49,7 @@ class PythonModuleTest:
 
     def test_matches_returns_false_when_selector_is_other_module(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module', content=content, source=None)
+        module = PythonModule(name='some.test.module', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
         selector.has_ident_path = False
@@ -60,7 +59,7 @@ class PythonModuleTest:
 
     def test_matches_returns_false_when_selector_is_identifier(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        module = PythonModule(full_name='some.test.module:some_ident', content=content, source=None)
+        module = PythonModule(name='some.test.module:some_ident', content=content, source=None)
         selector = mocker.MagicMock(spec=FullyQualifiedPythonName)
         selector.has_module_path = True
         selector.has_ident_path = False
@@ -93,8 +92,7 @@ class PythonPackageTest:
         subpackages = []
 
         init_module = mocker.MagicMock(spec=PythonModule)
-        init_module.full_name = 'mypackage.__init__'
-        init_module.name = '__init__'
+        init_module.name = 'mypackage.__init__'
         module1 = mocker.MagicMock(spec=PythonModule)
         module2 = mocker.MagicMock(spec=PythonModule)
         modules = [init_module, module1, module2]
@@ -110,8 +108,7 @@ class PythonPackageTest:
 
     def test_init_with_subpackages(self, mocker):
         sub_init_module = mocker.MagicMock(spec=PythonModule)
-        sub_init_module.full_name = 'mypackage.subpackage.__init__'
-        sub_init_module.name = '__init__'
+        sub_init_module.name = 'mypackage.subpackage.__init__'
         sub_module1 = mocker.MagicMock(spec=PythonModule)
         sub_module2 = mocker.MagicMock(spec=PythonModule)
         sub_modules = [sub_init_module, sub_module1, sub_module2]
@@ -121,8 +118,7 @@ class PythonPackageTest:
         ]
 
         init_module = mocker.MagicMock(spec=PythonModule)
-        init_module.full_name = 'mypackage.__init__'
-        init_module.name = '__init__'
+        init_module.name = 'mypackage.__init__'
         module1 = mocker.MagicMock(spec=PythonModule)
         module2 = mocker.MagicMock(spec=PythonModule)
         modules = [init_module, module1, module2]
@@ -138,6 +134,7 @@ class PythonPackageTest:
             *modules,
             *sub_modules
         ]
+
 
 class PythonApplicationTest:
     def test_init(self, mocker):

@@ -88,7 +88,7 @@ class Compiler:
 
                     parallel_tasks.append(
                         Task(
-                            name=f"Transforming (simple) '{asset.full_name}'",
+                            name=f"Transforming (simple) '{asset.name}'",
                             callable=partial(
                                 Compiler._transform_asset_parallel,
                                 asset=asset,
@@ -99,7 +99,7 @@ class Compiler:
 
                     sync_tasks.append(
                         Task(
-                            name=f"Transforming (complex) '{asset.full_name}'",
+                            name=f"Transforming (complex) '{asset.name}'",
                             callable=partial(
                                 Compiler._transform_asset,
                                 asset=asset,

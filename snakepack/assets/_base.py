@@ -22,9 +22,19 @@ T = TypeVar('T', bound=AssetType)
 
 
 class Asset(Generic[T], Selectable, ABC):
-    def __init__(self, content: AssetContent[Asset[T]], source: AssetContentSource):
+    def __init__(self, name: str, target_path: Path, content: AssetContent[Asset[T]], source: AssetContentSource):
+        self._name = name
+        self._target_path = target_path
         self._content = content
         self._source = source
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def target_path(self) -> Path:
+        return self._target_path
 
     @property
     def content(self) -> AssetContent[Asset[T]]:
@@ -38,17 +48,13 @@ class Asset(Generic[T], Selectable, ABC):
     def source(self) -> AssetContentSource:
         return self._source
 
-    @property
-    def extension(self):
-        raise NotImplementedError
+    @classmethod
+    def from_string(cls, name: str, target_path: Path, content: str) -> Asset[T]:
+        return cls(name=name, target_path=target_path, content=StringAssetContent(content), source=None)
 
     @classmethod
-    def from_string(cls, string: str) -> Asset[T]:
-        return cls(content=StringAssetContent(string), source=None)
-
-    @classmethod
-    def from_source(cls, source: AssetContentSource, **kwargs):
-        return cls(content=AssetContentCache(content_or_source=source), source=source, **kwargs)
+    def from_source(cls, name: str, target_path: Path, source: AssetContentSource, **kwargs):
+        return cls(name=name, target_path=target_path, content=AssetContentCache(content_or_source=source), source=source, **kwargs)
 
 
 class AssetGroup(Generic[T], ABC):

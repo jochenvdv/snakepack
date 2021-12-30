@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Iterable
 
 from snakepack.assets import (
@@ -22,13 +23,16 @@ class AssetTest:
 
     def test_init(self, mocker):
         content = mocker.MagicMock(spec=AssetContent)
-        asset = self.TestAsset(content=content, source=None)
+        asset = self.TestAsset(name='test', target_path=Path('./test.txt'), content=content, source=None)
 
+        assert asset.name == 'test'
+        assert asset.target_path == Path('./test.txt')
         assert asset.content is content
+        assert asset.source is None
 
     def test_content_setter(self, mocker):
         orig_content = mocker.MagicMock(spec=AssetContent)
-        asset = self.TestAsset(content=orig_content, source=None)
+        asset = self.TestAsset(name='test', target_path=Path('./test.py'), content=orig_content, source=None)
 
         new_content = mocker.MagicMock(spec=AssetContent)
         asset.content = new_content
@@ -36,7 +40,7 @@ class AssetTest:
         assert asset.content is new_content
 
     def test_from_string(self, mocker):
-        asset = self.TestAsset.from_string('test')
+        asset = self.TestAsset.from_string(name='test', target_path=Path('./test.py'), content='test')
 
         assert isinstance(asset.content, StringAssetContent)
         assert str(asset.content) == 'test'

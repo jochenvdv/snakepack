@@ -88,7 +88,7 @@ class PackageLoader(Loader):
                 # module
                 modules.append(
                     PythonModule.from_source(
-                        full_name=full_name,
+                        name=full_name,
                         source=FileContentSource(path=path, default_content_type=PythonModuleCst)
                     )
                 )

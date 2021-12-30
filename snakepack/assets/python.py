@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Iterable
 
 from boltons.iterutils import first, flatten
@@ -11,7 +12,7 @@ from snakepack.assets import (
     AssetGroup,
     AssetType
 )
-from snakepack.assets._base import T
+from snakepack.assets._base import T, StringAssetContent, AssetContentSource, AssetContentCache
 from snakepack.config.options import Selectable, Selector
 from snakepack.config.types import FullyQualifiedPythonName
 
@@ -19,18 +20,9 @@ Python = AssetType.create('Python')
 
 
 class PythonModule(Asset[Python]):
-    @property
-    def extension(self):
-        return '.py'
-
-    def __init__(self, full_name: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._full_name = full_name
-        self._name = full_name.split('.')[-1]
-
-    @property
-    def full_name(self) -> str:
-        return self._full_name
+    def __init__(self, name: str, *args, **kwargs):
+        target_path = Path(name.replace('.', '/'))
+        super().__init__(name, target_path, *args, **kwargs)
 
     @property
     def name(self) -> str:
@@ -40,7 +32,21 @@ class PythonModule(Asset[Python]):
         if not isinstance(selector, FullyQualifiedPythonName):
             return False
 
-        return not selector.has_module_path or selector.has_ident_path or '.'.join(selector.module_path) == self._full_name
+        return not selector.has_module_path or selector.has_ident_path or '.'.join(selector.module_path) == self._name
+
+    @classmethod
+    def from_string(cls, name: str, content: str, **kwargs) -> Asset[T]:
+        return cls(name=name, content=StringAssetContent(content), source=None)
+
+    @classmethod
+    def from_source(cls, name: str,source: AssetContentSource, **kwargs):
+        return cls(
+            name=name,
+            content=AssetContentCache(content_or_source=source),
+            source=source,
+            **kwargs
+        )
+
 
 
 class PythonModuleCst(AssetContent[PythonModule]):
@@ -69,7 +75,7 @@ class PythonPackage(AssetGroup[Python]):
         self._name = full_name.split('.')[-1]
         self._modules = modules
         self._subpackages = subpackages
-        self._init_module = first(module for module in modules if module.name == '__init__')
+        self._init_module = first(module for module in modules if module.name.split('.')[-1] == '__init__')
 
     @property
     def full_name(self) -> str:

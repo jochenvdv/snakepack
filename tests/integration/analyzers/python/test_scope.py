@@ -28,7 +28,7 @@ class ScopeAnalyzerIntegrationTest:
             )
         )
         module = PythonModule(
-            full_name='a',
+            name='a',
             content=content,
             source=None
         )

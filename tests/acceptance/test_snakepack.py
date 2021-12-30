@@ -15,6 +15,7 @@ class SnakepackAcceptanceTest(BaseAcceptanceTest):
 
     # application tests (import graph loader)
 
+    @pytest.mark.skip
     def test_snakepack_as_application_with_no_transformers(self, cli_runner, tmp_path, results_bag):
         test_path = self._create_test_path(tmp_path)
         config = self._create_application_config(transformers=None, test_path=test_path)

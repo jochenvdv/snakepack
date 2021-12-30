@@ -68,7 +68,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
             analyzers = self._create_analyzers()
 
         # analysis
-        subject = PythonModule(full_name='test', content=input_content, source=None)
+        subject = PythonModule(name='test', content=input_content, source=None)
         analyses = {}
 
         for analyzer in analyzers:
@@ -99,7 +99,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
             pytest.fail('Transformer output contains syntax errors')
 
         # second transformation on original input
-        subject = PythonModule(full_name='test', content=input_content, source=None)
+        subject = PythonModule(name='test', content=input_content, source=None)
 
         for analyzer in analyzers:
             if isinstance(analyzer, SubjectAnalyzer):
@@ -113,7 +113,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
         assert str(output_second_pass.content) == str(output_first_pass.content), 'Transformer isn\'t idempotent'
 
         # second transformation on output of initial transformation
-        subject = PythonModule(full_name='test', content=output_second_pass.content, source=None)
+        subject = PythonModule(name='test', content=output_second_pass.content, source=None)
 
         for analyzer in analyzers:
             if isinstance(analyzer, SubjectAnalyzer):

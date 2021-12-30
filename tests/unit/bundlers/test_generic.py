@@ -21,27 +21,29 @@ class FileBundlerTest:
         global_options = mocker.MagicMock(spec=GlobalOptions)
         bundler = FileBundler(global_options=global_options)
 
-        assert bundler.options.output_path == '{bundle_name}.py'
+        assert bundler.options.output_path == '{asset_target_path}'
 
     def test_bundle(self, mocker, fs):
         fs.create_dir('dist/')
         package = mocker.MagicMock(spec=Package)
         package.target_path = Path('dist/package1')
         global_options = mocker.MagicMock(spec=GlobalOptions)
-        options = FileBundler.Options(output_path='{bundle_name}.py')
+        options = FileBundler.Options(output_path='{asset_target_path}')
         bundler = FileBundler(global_options=global_options, options=options)
 
         asset1 = mocker.MagicMock(spec=Asset)
         content1 = mocker.MagicMock(spec=AssetContent)
         content1.__str__.return_value = 'test=True'
         asset1.content = content1
-        asset1.full_name = 'asset1'
+        asset1.name = 'asset1'
+        asset1.target_path = Path('asset1.py')
 
         asset2 = mocker.MagicMock(spec=Asset)
         content2 = mocker.MagicMock(spec=AssetContent)
         content2.__str__.return_value = 'test=False'
         asset2.content = content2
-        asset2.full_name = 'somepackage.asset2'
+        asset2.name = 'somepackage.asset2'
+        asset2.target_path = Path('somepackage/asset2.py')
 
         assets = [asset1, asset2]
         asset_group = mocker.MagicMock(spec=AssetGroup)

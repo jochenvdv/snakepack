@@ -127,7 +127,7 @@ class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
     def _create_python_dep(dependency: Node, entry_path: Path) -> PythonModule:
         if isinstance(dependency, Package):
             asset = PythonModule.from_source(
-                full_name=dependency.identifier + '.__init__',
+                name=dependency.identifier + '.__init__',
                 source=FileContentSource(dependency.filename, default_content_type=PythonModuleCst)
             )
         else:
