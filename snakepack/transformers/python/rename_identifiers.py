@@ -99,13 +99,17 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename because import graph is unknown and node is in global or class scope
                 return
 
-            for assignment in scope.assignments[node]:
+            for assignment in scope.assignments[node.value]:
                 if assignment.name is node.value:
-                    new_name = None
+                    if scope in self._renames_scope_map and node.value in self._renames_scope_map[scope]:
+                        # use generated identifier for previous assignment
+                        new_name = self._renames_scope_map[scope][node.value]
+                    else:
+                        new_name = None
 
-                    while new_name is None or (new_name != node.value and len(scope.accesses[new_name]) > 0):
-                        # generate new name that is not referenced yet in the current scope
-                        new_name = self._name_registry.generate_name_for_scope(scope=scope)
+                        while new_name is None or (new_name != node.value and len(scope.accesses[new_name]) > 0):
+                            # generate new name that is not referenced yet in the current scope
+                            new_name = self._name_registry.generate_name_for_scope(scope=scope)
 
                     self._renames[node] = new_name
 

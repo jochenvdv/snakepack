@@ -36,6 +36,13 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                 def inner():
                     nonlocal o
                     print(o)
+            zigzag = 5
+            zigzag = 6
+            
+            def function():
+                zigzag = 0
+            
+            zigzag += 1
             """
         )
 
@@ -58,6 +65,13 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                 def e():
                     nonlocal d
                     print(d)
+            g = 5
+            g = 6
+                  
+            def h():
+                a = 0
+            
+            g += 1
             """
         )
 
