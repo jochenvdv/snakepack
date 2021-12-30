@@ -13,7 +13,7 @@ class RemoveObjectBaseTransformer(BatchablePythonModuleTransformer):
         ) -> Union[BaseStatement, FlattenSentinel[BaseStatement], RemovalSentinel]:
             updated_bases = [
                 base for base in original_node.bases
-                if isinstance(base.value, Name) and base.value.value != 'object'
+                if not isinstance(base.value, Name) or base.value.value != 'object'
             ]
 
             return updated_node.with_changes(

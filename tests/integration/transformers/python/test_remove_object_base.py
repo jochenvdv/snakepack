@@ -19,6 +19,8 @@ class RemoveObjectBaseTransformerIntegrationTest(PythonModuleCstTransformerInteg
             class EdgeCase(Test): pass
             class Another(): pass
             class Final: pass
+            class Test2(base=123): pass
+            class Test3(typing.Foo): pass
             """
         )
 
@@ -28,6 +30,8 @@ class RemoveObjectBaseTransformerIntegrationTest(PythonModuleCstTransformerInteg
             class EdgeCase(Test): pass
             class Another: pass
             class Final: pass
+            class Test2(base=123): pass
+            class Test3(typing.Foo): pass
             """
         )
 
