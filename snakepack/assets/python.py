@@ -21,7 +21,7 @@ Python = AssetType.create('Python')
 
 class PythonModule(Asset[Python]):
     def __init__(self, name: str, *args, **kwargs):
-        target_path = Path(name.replace('.', '/'))
+        target_path = Path(f"{name.replace('.', '/')}.py")
         super().__init__(name, target_path, *args, **kwargs)
 
     @property
@@ -46,7 +46,6 @@ class PythonModule(Asset[Python]):
             source=source,
             **kwargs
         )
-
 
 
 class PythonModuleCst(AssetContent[PythonModule]):

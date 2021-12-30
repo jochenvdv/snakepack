@@ -74,6 +74,23 @@ class AssetGroup(Generic[T], ABC):
         raise NotImplementedError
 
 
+class GenericAssetGroup(AssetGroup[T]):
+    def __init__(self, assets: Iterable[Asset[T]]):
+        self._assets = assets
+
+    @property
+    def assets(self) -> Iterable[Asset[T]]:
+        return self._assets
+
+    @property
+    def deep_assets(self) -> Iterable[Asset[T]]:
+        return self._assets
+
+    @property
+    def subgroups(self) -> Iterable[AssetGroup[T]]:
+        return []
+
+
 U = TypeVar('U', bound=Asset)
 
 

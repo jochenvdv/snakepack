@@ -55,7 +55,7 @@ class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
                     python_version=self._target_version
             ):
                 module = self._create_python_dep(python_module, self._entry_point_path)
-                module_path_segments = module.full_name.split('.')
+                module_path_segments = module.name.split('.')
                 pkg_name = '.'.join(module_path_segments[:-1])
                 module_name = module_path_segments[-1]
 
@@ -143,7 +143,7 @@ class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
                 name = dependency.identifier
 
             asset = PythonModule.from_source(
-                full_name=name,
+                name=name,
                 source=FileContentSource(dependency.filename, default_content_type=PythonModuleCst)
             )
 
