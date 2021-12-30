@@ -4,7 +4,7 @@ import subprocess
 import sys
 from abc import abstractmethod
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Iterable
 from uuid import uuid4
 
 import pytest
@@ -125,26 +125,14 @@ class BaseAcceptanceTest:
             assert result.exit_code == 0, 'Snakepack invocation failed'
 
         # test compilation of output files
-        failed_compilations = []
+        failed_compilations = self._check_dir_compilation(config.target_base_path)
 
-        for file in config.target_base_path.iterdir():
-            if file.is_file():
-                file_content = file.read_text()
-
-                try:
-                    compile(
-                        source=file_content,
-                        filename=str(file),
-                        mode='exec'
-                    )
-                except SyntaxError as e:
-                    failed_compilations.append(file)
 
         if len(failed_compilations) > 0:
             if roundtrip:
-                failure_msg = f"Failed to compile output files:\n\n- '{file}\n'"
+                failure_msg = f"Failed to compile output files:\n\n{failed_compilations}\n'"
             else:
-                failure_msg = f"Failed to compile round-trip output files:\n\n- '{file}\n'"
+                failure_msg = f"Failed to compile round-trip output files:\n\n'{failed_compilations}\n'"
 
             pytest.fail(failure_msg)
 
@@ -153,6 +141,27 @@ class BaseAcceptanceTest:
             num_files, total_size_in_bytes = self._collect_metrics_for_dir(config.target_base_path, config)
             results_bag.num_files = num_files
             results_bag.total_size_in_bytes = total_size_in_bytes
+
+    @staticmethod
+    def _check_dir_compilation(path: Path) -> Iterable[Path]:
+        failed_compilations = []
+
+        for sub_path in path.iterdir():
+            if sub_path.is_file() and sub_path.name.endswith('.py'):
+                file_content = sub_path.read_text()
+
+                try:
+                    compile(
+                        source=file_content,
+                        filename=str(sub_path),
+                        mode='exec'
+                    )
+                except SyntaxError as e:
+                    failed_compilations.append(sub_path)
+            elif sub_path.is_dir():
+                failed_compilations.extend(BaseAcceptanceTest._check_dir_compilation(sub_path))
+
+        return failed_compilations
 
     @staticmethod
     def _collect_metrics_for_dir(path: Path, config) -> Tuple[int, int]:
