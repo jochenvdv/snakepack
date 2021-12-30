@@ -1,6 +1,7 @@
 import string
 from collections import deque
 from itertools import chain, cycle, dropwhile, islice, permutations, repeat, count
+from keyword import iskeyword
 from typing import Mapping, Iterable, Dict, Set, Optional, List, Generator, Deque, Tuple
 
 from libcst.metadata import Scope, Assignment
@@ -20,7 +21,7 @@ class NameRegistry:
 
         name = None
 
-        while name is None or name in self._registered_names[scope]:
+        while name is None or name in self._registered_names[scope] or iskeyword(name):
             name = next(self._scopes[scope])
 
         return name

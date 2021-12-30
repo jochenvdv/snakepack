@@ -1,4 +1,5 @@
 import string
+from keyword import iskeyword
 
 from libcst.metadata import Scope
 
@@ -21,13 +22,14 @@ class NameRegistryTest:
         for i in range(200):
             name = registry.generate_name_for_scope(scope=scope)
             assert not name.startswith(string.digits)
+            assert not iskeyword(name)
 
             if i < 52:
                 assert name == expected[i]
             elif i == 105:
-                assert name == 'a2'
+                assert name == 'a3'
             elif i == 176:
-                assert name == 'cd'
+                assert name == 'ce'
 
             registry.register_name_for_scope(scope=scope, name=name)
 
