@@ -15,7 +15,7 @@ from snakepack.analyzers.python import PythonModuleCstAnalyzer
 from snakepack.analyzers.python._base import BatchPythonModuleCstAnalyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
 from snakepack.assets import AssetContentSource, Asset
-from snakepack.assets.python import PythonModuleCst
+from snakepack.assets.python import PythonModuleCst, PythonModule
 from snakepack.bundlers import Bundle
 from snakepack.config.options import ComponentConfig
 from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
@@ -71,6 +71,9 @@ class Compiler:
                 parallel_tasks = []
 
                 for asset in bundle.asset_group.deep_assets:
+                    if not isinstance(asset, PythonModule):
+                        continue
+
                     transformers = [
                         transformer
                         for transformer in bundle.transformers

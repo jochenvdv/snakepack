@@ -8,8 +8,9 @@ from hypothesmith import from_grammar
 from libcst import parse_module
 
 from snakepack.analyzers import Analyzer
-from snakepack.analyzers._base import SubjectAnalyzer
+from snakepack.analyzers._base import SubjectAnalyzer, PostLoadingAnalyzer
 from snakepack.assets import AssetContent, Asset
+from snakepack.assets._base import GenericAssetGroup
 from snakepack.assets.python import PythonModule, PythonModuleCst
 from snakepack.config.model import GlobalOptions
 from snakepack.transformers import Transformer
@@ -72,11 +73,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
         analyses = {}
 
         for analyzer in analyzers:
-            if isinstance(analyzer, SubjectAnalyzer):
-                analysis = analyzer.analyse_subject(subject)
-            else:
-                analysis = analyzer.analyse()
-
+            analysis = self._run_analyzer(analyzer, subject)
             analyses[analyzer.__class__] = analysis
 
         # initial transformation
@@ -102,11 +99,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
         subject = PythonModule(name='test', content=input_content, source=None)
 
         for analyzer in analyzers:
-            if isinstance(analyzer, SubjectAnalyzer):
-                analysis = analyzer.analyse_subject(subject)
-            else:
-                analysis = analyzer.analyse()
-
+            analysis = self._run_analyzer(analyzer, subject)
             analyses[analyzer.__class__] = analysis
 
         output_second_pass = transformer.transform(analyses=analyses, subject=subject)
@@ -116,13 +109,19 @@ class PythonModuleCstTransformerIntegrationTestBase:
         subject = PythonModule(name='test', content=output_second_pass.content, source=None)
 
         for analyzer in analyzers:
-            if isinstance(analyzer, SubjectAnalyzer):
-                analysis = analyzer.analyse_subject(subject)
-            else:
-                analysis = analyzer.analyse()
-
+            analysis = self._run_analyzer(analyzer, subject)
             analyses[analyzer.__class__] = analysis
 
         output_third_pass = transformer.transform(analyses=analyses, subject=subject)
         assert str(output_third_pass.content) == str(output_second_pass.content), 'Transformer output is not fully transformed'
 
+    def _run_analyzer(self, analyzer, subject):
+        if isinstance(analyzer, SubjectAnalyzer):
+            analysis = analyzer.analyse_subject(subject)
+        elif isinstance(analyzer, PostLoadingAnalyzer):
+            asset_group = GenericAssetGroup(assets=[subject])
+            analysis = analyzer.analyse_assets(asset_group)
+        else:
+            raise Exception('Unknown analyzer type')
+
+        return analysis

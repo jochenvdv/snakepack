@@ -13,6 +13,7 @@ from snakepack.assets import (
     AssetType
 )
 from snakepack.assets._base import T, StringAssetContent, AssetContentSource, AssetContentCache
+from snakepack.assets.generic import StaticFile
 from snakepack.config.options import Selectable, Selector
 from snakepack.config.types import FullyQualifiedPythonName
 
@@ -69,11 +70,18 @@ class PythonModuleCst(AssetContent[PythonModule]):
 
 
 class PythonPackage(AssetGroup[Python]):
-    def __init__(self, full_name: str, modules: Iterable[PythonModule], subpackages: Iterable[PythonPackage]):
+    def __init__(
+            self,
+            full_name: str,
+            modules: Iterable[PythonModule],
+            subpackages: Iterable[PythonPackage],
+            data_files: Iterable[StaticFile]
+    ):
         self._full_name = full_name
         self._name = full_name.split('.')[-1]
         self._modules = modules
         self._subpackages = subpackages
+        self._data_files = data_files
         self._init_module = first(module for module in modules if module.name.split('.')[-1] == '__init__')
 
     @property
@@ -98,7 +106,8 @@ class PythonPackage(AssetGroup[Python]):
             *self._modules,
             *flatten(
                 subpackage.deep_assets for subpackage in self._subpackages
-            )
+            ),
+            *self._data_files
         ]
 
     @property

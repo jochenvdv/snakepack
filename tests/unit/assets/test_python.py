@@ -97,7 +97,7 @@ class PythonPackageTest:
         module2 = mocker.MagicMock(spec=PythonModule)
         modules = [init_module, module1, module2]
 
-        package = PythonPackage(full_name='mypackage', modules=modules, subpackages=subpackages)
+        package = PythonPackage(full_name='mypackage', modules=modules, subpackages=subpackages, data_files=[])
 
         assert package.full_name == 'mypackage'
         assert package.name == 'mypackage'
@@ -114,7 +114,7 @@ class PythonPackageTest:
         sub_modules = [sub_init_module, sub_module1, sub_module2]
 
         subpackages = [
-            PythonPackage(full_name='mypackage.subpackage', modules=sub_modules, subpackages=[])
+            PythonPackage(full_name='mypackage.subpackage', modules=sub_modules, subpackages=[], data_files=[])
         ]
 
         init_module = mocker.MagicMock(spec=PythonModule)
@@ -123,7 +123,7 @@ class PythonPackageTest:
         module2 = mocker.MagicMock(spec=PythonModule)
         modules = [init_module, module1, module2]
 
-        package = PythonPackage(full_name='mypackage', modules=modules, subpackages=subpackages)
+        package = PythonPackage(full_name='mypackage', modules=modules, subpackages=subpackages, data_files=[])
 
         assert package.full_name == 'mypackage'
         assert package.name == 'mypackage'

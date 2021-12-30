@@ -75,7 +75,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
         import_graph_analysis = MagicMock(spec=ImportGraphAnalyzer.Analysis)
         import_graph_analysis.get_importing_modules.side_effect = _get_importing_modules
         import_graph_analyzer = MagicMock(spec=ImportGraphAnalyzer)
-        import_graph_analyzer.analyse.return_value = import_graph_analysis
+        import_graph_analyzer.analyse_assets.return_value = import_graph_analysis
 
         return [
             ScopeAnalyzer(),

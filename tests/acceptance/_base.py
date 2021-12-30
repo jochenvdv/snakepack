@@ -48,7 +48,7 @@ class BaseAcceptanceTest:
         loader_config = ComponentConfig(
             name='package',
             options=PackageLoader.Options(
-                pkg_name=FullyQualifiedPythonName('snakepack')
+                pkg_name=FullyQualifiedPythonName('snakepack'),
             )
         )
         config = self._create_config(test_path, loader_config, transformers, roundtrip)
