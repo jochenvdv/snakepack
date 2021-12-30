@@ -4,6 +4,7 @@ import subprocess
 import sys
 from abc import abstractmethod
 from pathlib import Path
+from typing import Tuple
 from uuid import uuid4
 
 import pytest
@@ -28,7 +29,7 @@ class BaseAcceptanceTest:
     _SUBJECT_NAME = NotImplemented
     _SOURCEDIR = NotImplemented
     _APPLICATION_ENTRY_POINT = NotImplemented
-    _LIBRARY_PACKAGE = NotImplemented
+    _LIBRARY_PACKAGES = NotImplemented
 
     def _create_application_config(self, test_path, transformers=None, roundtrip=False):
         loader_config = ComponentConfig(
@@ -91,7 +92,7 @@ class BaseAcceptanceTest:
 
         return test_path
 
-    def _test_snakepack(self, cli_runner, test_path: Path, config: SnakepackConfig, roundtrip=False, results_bag=None, ):
+    def _test_snakepack(self, cli_runner, test_path: Path, config: SnakepackConfig, roundtrip=False, results_bag=None):
         # create config file
         config_path = test_path / 'config.yml'
         print(generate_yaml_config(config))
@@ -145,4 +146,24 @@ class BaseAcceptanceTest:
 
             pytest.fail(failure_msg)
 
-        # calculate metrics
+        # collect metrics
+        if results_bag is not None:
+            num_files, total_size_in_bytes = self._collect_metrics_for_dir(config.target_base_path, config)
+            results_bag.num_files = num_files
+            results_bag.total_size_in_bytes = total_size_in_bytes
+
+    @staticmethod
+    def _collect_metrics_for_dir(path: Path, config) -> Tuple[int, int]:
+        num_files = 0
+        total_size_in_bytes = 0
+
+        for sub_path in path.iterdir():
+            if sub_path.is_dir():
+                dir_num_files, dir_total_size_in_bytes = BaseAcceptanceTest._collect_metrics_for_dir(sub_path, config)
+                num_files += dir_num_files
+                total_size_in_bytes += dir_total_size_in_bytes
+            elif sub_path.is_file():
+                num_files += 1
+                total_size_in_bytes += sub_path.stat().st_size
+
+        return num_files, total_size_in_bytes
