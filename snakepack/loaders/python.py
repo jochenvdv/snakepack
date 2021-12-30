@@ -5,6 +5,7 @@ from operator import getitem
 
 from pathlib import Path
 from site import getsitepackages
+from typing import List
 
 from modulegraph.find_modules import find_modules, parse_mf_results
 from modulegraph.modulegraph import ModuleGraph, Package, Node
@@ -31,6 +32,7 @@ class ImportGraphLoader(Loader):
         entry_point_path = self.global_options.source_base_path / self._options.entry_point
         analyzer = ImportGraphAnalyzer(
             entry_point_path=entry_point_path,
+            includes=self._options.includes,
             target_version=self._options.target_version
         )
 
@@ -43,6 +45,7 @@ class ImportGraphLoader(Loader):
         entry_point: Path
         exclude_stdlib: bool = True
         target_version: str = '3.9'
+        includes: List[FullyQualifiedPythonName] = []
 
     __config_name__ = 'import_graph'
 

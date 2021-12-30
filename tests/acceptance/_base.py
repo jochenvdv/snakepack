@@ -29,13 +29,15 @@ class BaseAcceptanceTest:
     _SUBJECT_NAME = NotImplemented
     _SOURCEDIR = NotImplemented
     _APPLICATION_ENTRY_POINT = NotImplemented
+    _EXTRA_INCLUDES = NotImplemented
     _LIBRARY_PACKAGES = NotImplemented
 
     def _create_application_config(self, test_path, transformers=None, roundtrip=False):
         loader_config = ComponentConfig(
             name='import_graph',
             options=ImportGraphLoader.Options(
-                entry_point=self._APPLICATION_ENTRY_POINT
+                entry_point=self._APPLICATION_ENTRY_POINT,
+                includes=self._EXTRA_INCLUDES
             )
         )
         config = self._create_config(test_path, loader_config, transformers, roundtrip)
@@ -111,9 +113,9 @@ class BaseAcceptanceTest:
                     shell=True,
                     stderr=subprocess.STDOUT
                 )
-                print('ok:' + result.decode('utf-8'))
+                print(result.decode('utf-8'))
             except subprocess.CalledProcessError as e:
-                print(e.output)
+                print(e.output.decode('utf-8'))
                 pytest.fail('Snakepack round-trip invocation failed')
         else:
             import snakepack.app

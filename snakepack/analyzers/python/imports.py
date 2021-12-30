@@ -22,8 +22,14 @@ _STDLIB_MODULES = {}
 
 
 class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
-    def __init__(self, entry_point_path: Optional[Path], target_version: str):
+    def __init__(self, entry_point_path: Optional[Path], target_version: str, includes: Optional[Iterable[FullyQualifiedPythonName]]=None):
         self._entry_point_path = entry_point_path
+
+        if includes is None:
+            self._includes = []
+        else:
+            self._includes = includes
+
         self._target_version = target_version
         self._asset_group = None
         self._module_graph = None
@@ -33,7 +39,7 @@ class ImportGraphAnalyzer(PreLoadingAnalyzer, PostLoadingAnalyzer):
     def analyse(self) -> Analyzer.Analysis:
         assert self._entry_point_path is not None
 
-        self._module_graph = find_modules((str(self._entry_point_path),))
+        self._module_graph = find_modules((str(self._entry_point_path),), includes=self._includes)
         python_modules, c_extensions = parse_mf_results(self._module_graph)
 
         entry_point = None

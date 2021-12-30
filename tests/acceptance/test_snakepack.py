@@ -10,11 +10,11 @@ class SnakepackAcceptanceTest(BaseAcceptanceTest):
     _SUBJECT_NAME = 'snakepack'
     _SOURCEDIR = Path(__file__).resolve().parent.parent.parent
     _APPLICATION_ENTRY_POINT = 'snakepack/__main__.py'
+    _EXTRA_INCLUDES = ['pkg_resources._vendor.appdirs']
     _LIBRARY_PACKAGES = ['snakepack', 'tests']
 
     # application tests (import graph loader)
 
-    @pytest.mark.skip
     def test_snakepack_as_application_with_no_transformers(self, cli_runner, tmp_path, results_bag):
         test_path = self._create_test_path(tmp_path)
         config = self._create_application_config(transformers=None, test_path=test_path)

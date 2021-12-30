@@ -13,6 +13,8 @@ packages:
           name: import_graph
           options:
             entry_point: 'snakepack/__main__.py'
+            includes:
+              - pkg_resources._vendor.appdirs
         transformers:
           - name: remove_comments
           - name: remove_assertions
