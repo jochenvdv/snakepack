@@ -127,7 +127,6 @@ class BaseAcceptanceTest:
         # test compilation of output files
         failed_compilations = self._check_dir_compilation(config.target_base_path)
 
-
         if len(failed_compilations) > 0:
             if roundtrip:
                 failure_msg = f"Failed to compile output files:\n\n{failed_compilations}\n'"

@@ -3,7 +3,7 @@ from typing import Optional, Union, Dict, Tuple, Mapping, Type
 from boltons.iterutils import first, flatten
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, ClassDef, Name, CSTNode, Expr, BaseString, SimpleString, BaseExpression, Module, Assign, \
-    AssignTarget, SimpleWhitespace, ConcatenatedString
+    AssignTarget, SimpleWhitespace, ConcatenatedString, ImportFrom
 from libcst.metadata import ParentNodeProvider, ScopeProvider
 
 from snakepack.analyzers import Analyzer
@@ -122,7 +122,30 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                 # nothing hoisted
                 return updated_node
 
-            updated_body.insert(0, SimpleStatementLine(body=hoist_assignments))
+            hoisted = False
+
+            for block_index, stmt_block in enumerate(updated_node.body):
+                updated_stmt_block_body = list(stmt_block.body)
+
+                for stmt_index, stmt in enumerate(stmt_block.body):
+                    if (
+                            not isinstance(stmt, ImportFrom)
+                            or not isinstance(stmt.module, Name)
+                            or stmt.module.value != '__future__'
+                    ):
+                        # not a from __future__ import, so we can hoist assign here
+                        updated_stmt_block_body = [
+                            *updated_stmt_block_body[:stmt_index],
+                            *hoist_assignments,
+                            *updated_stmt_block_body[stmt_index:]
+                        ]
+                        updated_body[block_index] = stmt_block.with_changes(body=updated_stmt_block_body)
+                        hoisted = True
+                        break
+
+                if hoisted:
+                    break
+
             return updated_node.with_changes(body=updated_body)
 
     __config_name__ = 'hoist_literals'
