@@ -71,12 +71,12 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
                 if non_hoisted_char_count <= hoisted_char_count:
                     # don't hoist because no size reduction
-                    self._name_registry.reset(scope=scope)
+                    self._name_registry.reset(scope=scope.globals)
                     return updated_node
 
                 if updated_node.value not in self._hoisted_literals:
                     # we'll be using the generated identifier for hoisting
-                    self._name_registry.register_name_for_scope(scope=scope, name=new_identifier)
+                    self._name_registry.register_name_for_scope(scope=scope.globals, name=new_identifier)
 
             if not use_existing_assignment:
                 # mark the literal for hoisting with a new variable assignment
@@ -133,7 +133,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                             or not isinstance(stmt.module, Name)
                             or stmt.module.value != '__future__'
                     ):
-                        # not a from __future__ import, so we can hoist assign here
+                        # not a from __future__ import, so we can hoist assign before this stmt
                         updated_stmt_block_body = [
                             *updated_stmt_block_body[:stmt_index],
                             *hoist_assignments,

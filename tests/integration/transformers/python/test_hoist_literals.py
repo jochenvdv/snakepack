@@ -35,6 +35,21 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
             def func(a, b):
                 print(p)
                 print('nope')
+                
+            def test():
+                a = False
+                b = False
+                print('some_very_long_string')
+                print('some_very_long_string')
+                
+            print('again_some_very_long_string')
+            print('again_some_very_long_string')
+            
+            def other_test():
+                a = False
+                print('some_very_long_string')
+                print('some_very_long_string')
+
             """
         )
 
@@ -42,7 +57,7 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
             """
             from __future__ import annotations; from __future__ import absolute_import
             from __future__ import division
-            a='some_long_string'; b='r'; c='hello'; d='nope'; foo(a, x[a])
+            a='some_long_string'; b='r'; c='hello'; d='nope'; e='some_very_long_string'; f='again_some_very_long_string'; foo(a, x[a])
             bar(a)
             foo('s', x['s'])
             foo(b, b, b)
@@ -56,6 +71,21 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
             def func(a, b):
                 print(p)
                 print(d)
+                
+            def test():
+                a = False
+                b = False
+                print(e)
+                print(e)
+                
+            print(f)
+            print(f)
+      
+            def other_test():
+                a = False
+                print(e)
+                print(e)
+
             """
         )
 
