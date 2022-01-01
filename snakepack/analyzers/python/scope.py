@@ -68,13 +68,13 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
                 # global and class scope are never considered local scope
                 return False
 
-            if isinstance(self._metadata[ParentNodeProvider][node], Param) and isinstance(scope.parent, GlobalScope):
-                # function parameter names are considered global scope if the scope's parent scope is global scope
+            if isinstance(self._metadata[ParentNodeProvider][node], Param):
+                # function parameter names are not considered local scope (they are part of the API to the parent scope)
                 return False
 
             for assignment in scope.assignments[node]:
                 # identifiers that refer to parameters that are considered non-local scope are also non-local
-                if isinstance(assignment.node, Param) and isinstance(scope.parent, GlobalScope):
+                if isinstance(assignment.node, Param):
                     return False
 
             return True

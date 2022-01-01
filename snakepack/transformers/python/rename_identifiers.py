@@ -82,7 +82,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # identifier is excluded from renaming
                 return
 
-            if self._options.only_rename_in_local_scope and not self._analyses[ScopeAnalyzer].is_in_local_scope(node):
+            if self._options.only_rename_locals and not self._analyses[ScopeAnalyzer].is_in_local_scope(node):
                 return
 
             if self._analyses[ScopeAnalyzer].is_attribute(node):
@@ -90,7 +90,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 return
 
             if (
-                    not self._options.only_rename_in_local_scope
+                    not self._options.only_rename_locals
                     and self._analyses[ImportGraphAnalyzer].import_graph_known
                     and len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0
             ):
@@ -104,7 +104,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 return
 
             if (
-                    not self._options.only_rename_in_local_scope
+                    not self._options.only_rename_locals
                     and not self._analyses[ImportGraphAnalyzer].import_graph_known
                     and isinstance(scope, (GlobalScope, ClassScope))
             ):
@@ -182,7 +182,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             return None
 
     class Options(PythonModuleTransformer.Options):
-        only_rename_in_local_scope: bool = True
+        only_rename_locals: bool = True
 
 
     __config_name__ = 'rename_identifiers'

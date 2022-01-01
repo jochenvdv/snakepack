@@ -78,16 +78,16 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
         self._test_transformation(
             input=input_content,
             expected_output=expected_output_content,
-            options=RenameIdentifiersTransformer.Options(only_rename_in_local_scope=False)
+            options=RenameIdentifiersTransformer.Options(only_rename_locals=False)
         )
 
     def test_transform_only_rename_in_local_scope(self):
         input_content = dedent(
             """
             xo = 5;
-            def foo(attr, anattr):
+            def foo(attr: int, anattr):
                 pass
-            def bar(attr, anattr):
+            def bar(attr, anattr: str):
                 return b(attr, anattr)
             class Class(object):
                 attr = 'foo'
@@ -119,10 +119,10 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             def func1():
                 var1 = 1
                 
-                def func2():
+                def func2(some_var):
                     var2 = 2
                     
-                    def func3():
+                    def func3(other_var):
                         print(var1 + var2)
             """
         )
@@ -130,9 +130,9 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
         expected_output_content = dedent(
             """
             xo = 5;
-            def foo(attr, anattr):
+            def foo(attr: int, anattr):
                 pass
-            def bar(attr, anattr):
+            def bar(attr, anattr: str):
                 return b(attr, anattr)
             class Class(object):
                 attr = 'foo'
@@ -164,10 +164,10 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             def func1():
                 b = 1
                 
-                def c():
+                def c(some_var):
                     d = 2
                     
-                    def e():
+                    def e(other_var):
                         print(b + d)
             """
         )
