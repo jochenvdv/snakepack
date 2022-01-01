@@ -126,6 +126,19 @@ class RemoveWhitespaceTransformerIntegrationTest(PythonModuleCstTransformerInteg
                 d
             )
             #0#
+            
+            \"\"\"module docstring\"\"\"
+
+            from typing import Any
+            
+            # comment
+            
+            import sys  # trailing whitespace
+            # leading comment
+            from typing import _type_check  # trailing comment
+            
+            def _check_fails(cls, other):
+                pass
             """
         )
 
@@ -167,6 +180,12 @@ class RemoveWhitespaceTransformerIntegrationTest(PythonModuleCstTransformerInteg
             #this as well
             c,d)
             #0#
+            \"\"\"module docstring\"\"\";from typing import Any
+            #comment
+            import sys#trailing whitespace
+            #leading comment
+            from typing import _type_check#trailing comment
+            def _check_fails(cls,other):pass
             """
         ).strip()
 

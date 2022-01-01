@@ -528,6 +528,7 @@ class RemoveWhitespaceTransformer(BatchablePythonModuleTransformer):
             updated_body = []
             collapse_queue = []
             leading_lines = []
+            last_trailing_whitespace = None
 
             for statement in statements:
                 if isinstance(statement, SimpleStatementLine):
@@ -538,21 +539,35 @@ class RemoveWhitespaceTransformer(BatchablePythonModuleTransformer):
                                 cls._merge_statement_lines(
                                     lines=collapse_queue,
                                     leading_lines=leading_lines,
-                                    trailing_whitespace=statement.trailing_whitespace
+                                    trailing_whitespace=last_trailing_whitespace
                                 )
                             )
+                            collapse_queue.clear()
+                            leading_lines.clear()
+
+                        assert len(leading_lines) == 0
 
                         if statement.trailing_whitespace.comment is not None:
                             # can't collapse with following statement because of trailing whitespace
+                            updated_body.append(
+                                cls._merge_statement_lines(
+                                    lines=[statement],
+                                    leading_lines=statement.leading_lines,
+                                    trailing_whitespace=statement.trailing_whitespace
+                                )
+                            )
                             collapse_queue.clear()
                             leading_lines.clear()
                         else:
                             # can possibly be merged with following lines
                             collapse_queue = [statement]
                             leading_lines = [*statement.leading_lines]
+                            last_trailing_whitespace = statement.trailing_whitespace
                     elif statement.trailing_whitespace.comment is None:
                         # can possibly be merged with next lines
                         collapse_queue.append(statement)
+                        leading_lines = [*statement.leading_lines]
+                        last_trailing_whitespace = statement.trailing_whitespace
                     else:
                         # can't collapse with following statement because of trailing whitespace
                         collapse_queue.append(statement)
