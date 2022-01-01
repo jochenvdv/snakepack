@@ -19,7 +19,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
     def test_transform(self):
         input_content = dedent(
             """
-            x = 5;
+            xo = 5;
             def foo(attr, anattr):
                 pass
             def bar(attr, anattr):
@@ -27,15 +27,15 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             class Class(object):
                 attr = 'foo'
             foo(x);
-            y = 6
-            a = x + y
+            yo = 6
+            a = xo + yo
             Class.attr = 'bar'
             def imported(a, b, c):
-                o = True
+                ooops = True
                 
                 def inner():
-                    nonlocal o
-                    print(o)
+                    nonlocal ooops
+                    print(ooops)
             zigzag = 5
             zigzag = 6
             
@@ -47,31 +47,31 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
         )
 
         expected_output_content = dedent(
-            """
-            a = 5;
-            def b(a, b):
+            """       
+            b = 5;
+            def c(d, e):
                 pass
-            def c(a, c):
-                return b(a, c)
-            class d(object):
+            def d(e, f):
+                return b(e, f)
+            class e(object):
                 attr = 'foo'
-            b(a);
-            e = 6
-            f = a + e
-            d.attr = 'bar'
+            c(x);
+            f = 6
+            a = b + f
+            e.attr = 'bar'
             def imported(a, b, c):
-                d = True
-                
-                def e():
-                    nonlocal d
-                    print(d)
-            g = 5
-            g = 6
-                  
-            def h():
-                a = 0
+                k = True
             
-            g += 1
+                def g():
+                    nonlocal k
+                    print(k)
+            h = 5
+            h = 6
+            
+            def g():
+                h = 0
+            
+            h += 1
             """
         )
 
@@ -84,7 +84,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
     def test_transform_only_rename_in_local_scope(self):
         input_content = dedent(
             """
-            x = 5;
+            xo = 5;
             def foo(attr, anattr):
                 pass
             def bar(attr, anattr):
@@ -92,15 +92,15 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             class Class(object):
                 attr = 'foo'
             foo(x);
-            y = 6
-            a = x + y
+            yo = 6
+            a = xo + yo
             Class.attr = 'bar'
             def imported(a, b, c):
-                o = True
+                ooops = True
 
                 def inner():
-                    nonlocal o
-                    print(o)
+                    nonlocal ooops
+                    print(ooops)
             zigzag = 5
             zigzag = 6
 
@@ -129,7 +129,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
 
         expected_output_content = dedent(
             """
-            x = 5;
+            xo = 5;
             def foo(attr, anattr):
                 pass
             def bar(attr, anattr):
@@ -137,8 +137,8 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             class Class(object):
                 attr = 'foo'
             foo(x);
-            y = 6
-            a = x + y
+            yo = 6
+            a = xo + yo
             Class.attr = 'bar'
             def imported(a, b, c):
                 d = True

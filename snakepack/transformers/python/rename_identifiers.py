@@ -3,7 +3,7 @@ from typing import Optional, Union, Dict, Mapping, Type
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
-    GlobalScope, ClassScope, Assignment
+    GlobalScope, ClassScope, Assignment, BuiltinScope
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -99,6 +99,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
 
+            if isinstance(scope, BuiltinScope):
+                # don't rename builtins
+                return
+
             if (
                     not self._options.only_rename_in_local_scope
                     and not self._analyses[ImportGraphAnalyzer].import_graph_known
@@ -115,10 +119,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                     if assignment.name == node.value:
                         self._rename_identifier(node, scope, assignment)
 
-                current_scope = current_scope.parent
-
-                if isinstance(current_scope, GlobalScope):
+                if isinstance(current_scope, (BuiltinScope, GlobalScope)):
                     done = True
+
+                current_scope = current_scope.parent
 
         def leave_Name(self, original_node: Name, updated_node: Name) -> BaseExpression:
             if original_node in self._renames and updated_node.value not in self._excluded_names:
@@ -127,7 +131,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             return updated_node
 
         def _rename_identifier(self, node: Name, scope: Scope, assignment: Optional[Assignment] = None):
-            if renamed_in_scope := self._identifer_renamed_in_scope(node.value, scope):
+            if renamed_in_scope := self._identifier_renamed_in_scope(node.value, scope):
                 # use generated identifier for previous assignment
                 new_name = self._renames_scope_map[renamed_in_scope][node.value]
             else:
@@ -137,10 +141,14 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                         new_name is None
                         or (new_name != node.value and len(scope.accesses[new_name]) > 0)
                         or new_name in scope
-                        or self._identifer_renamed_in_scope(new_name, scope, by_new_name=True) is not None
+                        or self._identifier_renamed_in_scope(new_name, scope, by_new_name=True) is not None
                 ):
                     # generate new name that is not referenced yet in the current scope
                     new_name = self._name_registry.generate_name_for_scope(scope=scope)
+
+            if len(new_name) >= len(node.value):
+                # don't rename because new identifier is not shorter
+                return
 
             self._renames[node] = new_name
 
@@ -154,16 +162,20 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 for access in assignment.references:
                     self._renames[access.node] = new_name
 
-        def _identifer_renamed_in_scope(self, name: str, scope: Scope, by_new_name=False) -> Optional[Scope]:
+        def _identifier_renamed_in_scope(self, name: str, scope: Scope, by_new_name=False) -> Optional[Scope]:
             current_scope = scope
+            done = False
 
-            while not isinstance(current_scope, GlobalScope):
+            while not done:
                 if current_scope in self._renames_scope_map:
                     if not by_new_name and name in self._renames_scope_map[current_scope]:
                         return current_scope
 
                     if by_new_name and name in self._renames_scope_map[current_scope].values():
                         return current_scope
+
+                if isinstance(current_scope, GlobalScope):
+                    done = True
 
                 current_scope = current_scope.parent
 
