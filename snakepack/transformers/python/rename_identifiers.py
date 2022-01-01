@@ -1,7 +1,7 @@
 from typing import Optional, Union, Dict, Mapping, Type
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
-    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal
+    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal, Param
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
     GlobalScope, ClassScope, Assignment, BuiltinScope
 
@@ -53,25 +53,22 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             return False
 
         def visit_Nonlocal(self, node: Nonlocal) -> Optional[bool]:
-            # exclude identifiers referenced by nonlocal statements (libcst-limitation)
             for name_item in node.names:
                 name = name_item.name.value
 
                 if name in self._excluded_names:
                     continue
 
-                current_scope = None
+                scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
+                renamed_in_scope = self._identifier_renamed_in_scope(name, scope)
 
-                while not isinstance(current_scope, GlobalScope):
-                    if current_scope is None:
-                        current_scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
-                    else:
-                        current_scope = current_scope.parent
+                if renamed_in_scope is None:
+                    # identifier wasn't renamed in scope above, so won't be renaming it here
+                    return False
 
-                    if current_scope in self._renames_scope_map and name in self._renames_scope_map[current_scope]:
-                        # mark nonlocal name for renaming
-                        self._renames[name_item.name] = self._renames_scope_map[current_scope][name]
-                        self._name_registry.register_name_for_scope(scope=current_scope, name=name)
+                # mark nonlocal name for renaming
+                self._renames[name_item.name] = self._renames_scope_map[renamed_in_scope][name]
+                self._name_registry.register_name_for_scope(scope=scope, name=name)
 
         def visit_Name(self, node: Name) -> Optional[bool]:
             if node in self._renames:
@@ -116,7 +113,8 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             while not done:
                 for assignment in current_scope.assignments[node.value]:
-                    if assignment.name == node.value:
+
+                    if not self._options.only_rename_locals or not isinstance(assignment.node, Param):
                         self._rename_identifier(node, scope, assignment)
 
                 if isinstance(current_scope, (BuiltinScope, GlobalScope)):
