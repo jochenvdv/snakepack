@@ -82,12 +82,16 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # identifier is excluded from renaming
                 return
 
+            if self._options.only_rename_in_local_scope and not self._analyses[ScopeAnalyzer].is_in_local_scope(node):
+                return
+
             if self._analyses[ScopeAnalyzer].is_attribute(node):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
                 return
 
             if (
-                    self._analyses[ImportGraphAnalyzer].import_graph_known
+                    not self._options.only_rename_in_local_scope
+                    and self._analyses[ImportGraphAnalyzer].import_graph_known
                     and len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0
             ):
                 # don't rename because this identifier is imported in another module
@@ -95,7 +99,11 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
 
-            if not self._analyses[ImportGraphAnalyzer].import_graph_known and isinstance(scope, (GlobalScope, ClassScope)):
+            if (
+                    not self._options.only_rename_in_local_scope
+                    and not self._analyses[ImportGraphAnalyzer].import_graph_known
+                    and isinstance(scope, (GlobalScope, ClassScope))
+            ):
                 # don't rename because import graph is unknown and node is in global or class scope
                 return
 
@@ -127,6 +135,9 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 return updated_node.with_changes(value=self._renames[original_node])
 
             return updated_node
+
+    class Options(PythonModuleTransformer.Options):
+        only_rename_in_local_scope: bool = True
 
 
     __config_name__ = 'rename_identifiers'

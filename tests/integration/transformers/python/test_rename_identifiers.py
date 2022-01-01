@@ -75,6 +75,85 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             """
         )
 
+        self._test_transformation(
+            input=input_content,
+            expected_output=expected_output_content,
+            options=RenameIdentifiersTransformer.Options(only_rename_in_local_scope=False)
+        )
+
+    def test_transform_only_rename_in_local_scope(self):
+        input_content = dedent(
+            """
+            x = 5;
+            def foo(attr, anattr):
+                pass
+            def bar(attr, anattr):
+                return b(attr, anattr)
+            class Class(object):
+                attr = 'foo'
+            foo(x);
+            y = 6
+            a = x + y
+            Class.attr = 'bar'
+            def imported(a, b, c):
+                o = True
+
+                def inner():
+                    nonlocal o
+                    print(o)
+            zigzag = 5
+            zigzag = 6
+
+            def function():
+                zigzag = 0
+
+            zigzag += 1
+            
+            def nonlocal_1():
+                foobar = True
+                
+                def nonlocal_2():
+                    nonlocal foobar
+                    foobar = False
+            """
+        )
+
+        expected_output_content = dedent(
+            """
+            x = 5;
+            def foo(attr, anattr):
+                pass
+            def bar(attr, anattr):
+                return b(attr, anattr)
+            class Class(object):
+                attr = 'foo'
+            foo(x);
+            y = 6
+            a = x + y
+            Class.attr = 'bar'
+            def imported(a, b, c):
+                a = True
+                
+                def b():
+                    nonlocal a
+                    print(a)
+            zigzag = 5
+            zigzag = 6
+            
+            def function():
+                a = 0
+            
+            zigzag += 1
+            
+            def nonlocal_1():
+                a = True
+                
+                def b():
+                    nonlocal a
+                    a = False
+            """
+        )
+
         self._test_transformation(input=input_content, expected_output=expected_output_content)
 
     def _create_analyzers(self) -> Iterable[Analyzer]:

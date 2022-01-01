@@ -19,6 +19,7 @@ from snakepack.transformers.python._base import PythonModuleTransformer
 
 class PythonModuleCstTransformerIntegrationTestBase:
     _TRANSFORMER_CLASS = NotImplemented
+    _TRANSFORMER_OPTIONS = None
 
     _EXCLUDED_EXAMPLES = {
         '\n \x0cpass#',
@@ -42,9 +43,16 @@ class PythonModuleCstTransformerIntegrationTestBase:
             analyzers=analyzers
         )
 
-    def _create_transformer(self) -> PythonModuleTransformer:
+    def _create_transformer(self, options=None) -> PythonModuleTransformer:
         global_options = GlobalOptions()
-        transformer = self._TRANSFORMER_CLASS(global_options=global_options)
+
+        if options is not None:
+            transformer = self._TRANSFORMER_CLASS(global_options=global_options, options=options)
+        elif self._TRANSFORMER_OPTIONS is not None:
+            transformer = self._TRANSFORMER_CLASS(global_options=global_options, options=self._TRANSFORMER_OPTIONS)
+        else:
+            transformer = self._TRANSFORMER_CLASS(global_options=global_options)
+
         return transformer
 
     def _create_analyzers(self) -> Iterable[Analyzer]:
@@ -55,7 +63,8 @@ class PythonModuleCstTransformerIntegrationTestBase:
             input: str,
             expected_output: Optional[str] = None,
             transformer: Optional[PythonModuleTransformer] = None,
-            analyzers: Optional[Iterable[Analyzer]] = None
+            analyzers: Optional[Iterable[Analyzer]] = None,
+            options=None
     ):
         input_content = PythonModuleCst(cst=parse_module(input))
 
@@ -63,7 +72,7 @@ class PythonModuleCstTransformerIntegrationTestBase:
             expected_output = PythonModuleCst(cst=parse_module(dedent(expected_output)))
 
         if transformer is None:
-            transformer = self._create_transformer()
+            transformer = self._create_transformer(options=options)
 
         if analyzers is None:
             analyzers = self._create_analyzers()

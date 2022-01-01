@@ -3,8 +3,9 @@ from __future__ import annotations
 import functools
 from typing import Union, List, Iterable
 
-from libcst import MetadataWrapper, CSTNode, Name, Attribute, ClassDef, FunctionDef
-from libcst.metadata import ScopeProvider, ExpressionContextProvider, Scope, ParentNodeProvider, ClassScope
+from libcst import MetadataWrapper, CSTNode, Name, Attribute, ClassDef, FunctionDef, Param
+from libcst.metadata import ScopeProvider, ExpressionContextProvider, Scope, ParentNodeProvider, ClassScope, \
+    ComprehensionScope, FunctionScope, GlobalScope
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python import PythonModuleCstAnalyzer
@@ -58,6 +59,20 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
                     return self._metadata[ScopeProvider][current_node]
 
                 current_node = self._metadata[ParentNodeProvider][current_node]
+
+        @functools.lru_cache()
+        def is_in_local_scope(self, node: CSTNode) -> bool:
+            scope = self.get_scope_for_node(node)
+
+            if not isinstance(scope, (FunctionScope, ComprehensionScope)):
+                # global and class scope are never considered local scope
+                return False
+
+            if isinstance(self._metadata[ParentNodeProvider][node], Param) and isinstance(scope.parent, GlobalScope):
+                # function parameter names are considered global scope if the scope's parent scope is global scope
+                return False
+
+            return True
 
     __config_name__ = 'scope'
 
