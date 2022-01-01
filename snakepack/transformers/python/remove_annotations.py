@@ -8,7 +8,7 @@ from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.transformers.python._base import PythonModuleTransformer, BatchablePythonModuleTransformer
 
 
-class RemoveAnnotationsTransformer(BatchablePythonModuleTransformer):
+class RemoveAnnotationsTransformer(PythonModuleTransformer):
     REQUIRED_ANALYZERS = PythonModuleTransformer.REQUIRED_ANALYZERS + [
         ScopeAnalyzer
     ]

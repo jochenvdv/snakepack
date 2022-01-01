@@ -166,7 +166,7 @@ class Compiler:
     @staticmethod
     def _transform_asset_parallel(asset, transformers):
         for transformer in transformers:
-            transformer.transform(analyses=[], subject=asset)
+            transformer.transform(analyses={}, subject=asset)
 
 
 T = TypeVar('T')
