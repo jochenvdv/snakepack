@@ -3,7 +3,7 @@ from typing import Optional, Union, Dict, Mapping, Type
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
-    GlobalScope, ClassScope
+    GlobalScope, ClassScope, Assignment
 
 from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.imports import ImportGraphAnalyzer
@@ -107,34 +107,67 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename because import graph is unknown and node is in global or class scope
                 return
 
-            for assignment in scope.assignments[node.value]:
-                if assignment.name is node.value:
-                    if scope in self._renames_scope_map and node.value in self._renames_scope_map[scope]:
-                        # use generated identifier for previous assignment
-                        new_name = self._renames_scope_map[scope][node.value]
-                    else:
-                        new_name = None
+            current_scope = scope
+            done = False
 
-                        while new_name is None or (new_name != node.value and len(scope.accesses[new_name]) > 0):
-                            # generate new name that is not referenced yet in the current scope
-                            new_name = self._name_registry.generate_name_for_scope(scope=scope)
+            while not done:
+                for assignment in current_scope.assignments[node.value]:
+                    if assignment.name == node.value:
+                        self._rename_identifier(node, scope, assignment)
 
-                    self._renames[node] = new_name
+                current_scope = current_scope.parent
 
-                    if scope not in self._renames_scope_map:
-                        self._renames_scope_map[scope] = {}
-
-                    self._renames_scope_map[scope][node.value] = new_name
-                    self._name_registry.register_name_for_scope(scope=scope, name=new_name)
-
-                    for access in assignment.references:
-                        self._renames[access.node] = new_name
+                if isinstance(current_scope, GlobalScope):
+                    done = True
 
         def leave_Name(self, original_node: Name, updated_node: Name) -> BaseExpression:
             if original_node in self._renames and updated_node.value not in self._excluded_names:
                 return updated_node.with_changes(value=self._renames[original_node])
 
             return updated_node
+
+        def _rename_identifier(self, node: Name, scope: Scope, assignment: Optional[Assignment] = None):
+            if renamed_in_scope := self._identifer_renamed_in_scope(node.value, scope):
+                # use generated identifier for previous assignment
+                new_name = self._renames_scope_map[renamed_in_scope][node.value]
+            else:
+                new_name = None
+
+                while (
+                        new_name is None
+                        or (new_name != node.value and len(scope.accesses[new_name]) > 0)
+                        or new_name in scope
+                        or self._identifer_renamed_in_scope(new_name, scope, by_new_name=True) is not None
+                ):
+                    # generate new name that is not referenced yet in the current scope
+                    new_name = self._name_registry.generate_name_for_scope(scope=scope)
+
+            self._renames[node] = new_name
+
+            if scope not in self._renames_scope_map:
+                self._renames_scope_map[scope] = {}
+
+            self._renames_scope_map[scope][node.value] = new_name
+            self._name_registry.register_name_for_scope(scope=scope, name=new_name)
+
+            if assignment is not None:
+                for access in assignment.references:
+                    self._renames[access.node] = new_name
+
+        def _identifer_renamed_in_scope(self, name: str, scope: Scope, by_new_name=False) -> Optional[Scope]:
+            current_scope = scope
+
+            while not isinstance(current_scope, GlobalScope):
+                if current_scope in self._renames_scope_map:
+                    if not by_new_name and name in self._renames_scope_map[current_scope]:
+                        return current_scope
+
+                    if by_new_name and name in self._renames_scope_map[current_scope].values():
+                        return current_scope
+
+                current_scope = current_scope.parent
+
+            return None
 
     class Options(PythonModuleTransformer.Options):
         only_rename_in_local_scope: bool = True

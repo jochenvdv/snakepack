@@ -115,6 +115,15 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                 def nonlocal_2():
                     nonlocal foobar
                     foobar = False
+            
+            def func1():
+                var1 = 1
+                
+                def func2():
+                    var2 = 2
+                    
+                    def func3():
+                        print(var1 + var2)
             """
         )
 
@@ -132,25 +141,34 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             a = x + y
             Class.attr = 'bar'
             def imported(a, b, c):
-                a = True
+                d = True
                 
-                def b():
-                    nonlocal a
-                    print(a)
+                def e():
+                    nonlocal d
+                    print(d)
             zigzag = 5
             zigzag = 6
             
             def function():
-                a = 0
+                b = 0
             
             zigzag += 1
             
             def nonlocal_1():
-                a = True
+                b = True
                 
-                def b():
-                    nonlocal a
-                    a = False
+                def c():
+                    nonlocal b
+                    b = False
+                          
+            def func1():
+                b = 1
+                
+                def c():
+                    d = 2
+                    
+                    def e():
+                        print(b + d)
             """
         )
 
