@@ -86,6 +86,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
                 return
 
+            if self._analyses[ScopeAnalyzer].is_type_annotation(node):
+                # don't rename type annotations
+                return
+
             if (
                     not self._options.only_rename_locals
                     and self._analyses[ImportGraphAnalyzer].import_graph_known

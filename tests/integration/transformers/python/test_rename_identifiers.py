@@ -120,7 +120,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             def func1():
                 var1 = 1
                 
-                def func2(some_var):
+                def func2(some_var: SomeClazz):
                     var2 = 2
                     print(some_var)
                     
@@ -169,7 +169,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             def func1():
                 b = 1
                 
-                def c(some_var):
+                def c(some_var: SomeClazz):
                     d = 2
                     print(some_var)
 
