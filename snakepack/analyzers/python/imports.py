@@ -83,8 +83,13 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
             for importing_module in importing_modules:
                 if isinstance(importing_module, Extension):
                     # cannot analyze C extensions, assume identifier is imported
-                    identifier_imported = True
-                    break
+                    modules_importing_identifier.append(importing_module)
+                    continue
+
+                if importing_module.content.cst not in self._import_metadata[importing_module]:
+                    # assume imported
+                    modules_importing_identifier.append(importing_module)
+                    continue
 
                 import_stmts = self._import_metadata[importing_module][ImportGraphAnalyzer.ImportProvider][importing_module.content.cst]
                 identifier_imported = False
@@ -94,40 +99,39 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
                         for imported_name in import_stmt.names:
                             name = imported_name.name.value if isinstance(imported_name.name, Name) else imported_name.name.attr.value
 
-                            if module.full_name == name:
+                            if module.name == name:
                                 identifier_imported = True
                                 break
 
                         if identifier_imported:
                             break
                     elif isinstance(import_stmt, ImportFrom):
-                        target_module = '.'.join(importing_module.full_name.split('.')[-1])
+                        target_module = '.'.join(importing_module.name.split('.')[-1])
 
                         for relative_dot in import_stmt.relative:
-                            target_module = '.'.join(importing_module.full_name.split('.')[-1])
+                            target_module = '.'.join(importing_module.name.split('.')[-1])
 
                         target_module = f'{target_module}.{import_stmt.module}'
 
-                        if target_module != module.full_name:
+                        if target_module != module.name:
                             continue
 
+                        if isinstance(import_stmt.names, ImportStar):
+                            identifier_imported = True
+                            break
+
                         for imported_name in import_stmt.names:
-                            if isinstance(imported_name, ImportStar):
+                            name = imported_name.value if isinstance(imported_name, Name) else imported_name.attr.value
+
+                            if name == identifier:
                                 identifier_imported = True
-                                break
-
-                            for import_alias in imported_name:
-                                name = imported_name.value if isinstance(imported_name, Name) else imported_name.attr.value
-
-                                if name == identifier:
-                                    identifier_imported = True
-                                    break
-
-                            if identifier_imported:
                                 break
 
                         if identifier_imported:
                             break
+
+                    if identifier_imported:
+                        break
 
                 if identifier_imported:
                     modules_importing_identifier.append(importing_module)
@@ -136,6 +140,10 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
 
         @functools.lru_cache()
         def identifier_imported_in_module(self, identifier: str, module: PythonModule) -> bool:
+            if module.content.cst not in self._import_metadata[module][ImportGraphAnalyzer.ImportProvider]:
+                # assume imported
+                return True
+
             import_stmts = self._import_metadata[module][ImportGraphAnalyzer.ImportProvider][module.content.cst]
 
             for import_stmt in import_stmts:
@@ -159,15 +167,18 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._imports = []
+            self._module = None
 
         def visit_Import(self, node: Import) -> Optional[bool]:
             self._imports.append(node)
+            self.set_metadata(self._module, self._imports)
 
         def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
             self._imports.append(node)
+            self.set_metadata(self._module, self._imports)
 
         def visit_Module(self, node: Module) -> Optional[bool]:
-            self.set_metadata(node, self._imports)
+            self._module = node
 
     CST_PROVIDERS = {
         ImportProvider
