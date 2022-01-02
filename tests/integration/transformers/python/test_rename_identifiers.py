@@ -129,6 +129,11 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                         print(var2=some_var)
                         print(other_var)
                         print(var1 + var2)
+            
+            def importtest():
+                imported_var: SomeType
+                
+                from some_module import imported_var
             """
         )
 
@@ -179,6 +184,12 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                         print(var2=some_var)
                         print(other_var)
                         print(b + d)
+            
+            
+            def importtest():
+                imported_var: SomeType
+                
+                from some_module import imported_var
             """
         )
 
@@ -193,8 +204,15 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
 
             return []
 
+        def _identifier_imported_in_module(identifier, module):
+            if identifier == 'imported_var':
+                return True
+
+            return False
+
         import_graph_analysis = MagicMock(spec=ImportGraphAnalyzer.Analysis)
         import_graph_analysis.get_importing_modules.side_effect = _get_importing_modules
+        import_graph_analysis.identifier_imported_in_module.side_effect = _identifier_imported_in_module
         import_graph_analyzer = MagicMock(spec=ImportGraphAnalyzer)
         import_graph_analyzer.analyse_assets.return_value = import_graph_analysis
 

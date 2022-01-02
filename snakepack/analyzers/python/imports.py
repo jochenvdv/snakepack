@@ -86,7 +86,7 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
                     identifier_imported = True
                     break
 
-                import_stmts = self._import_metadata[importing_module][ImportGraphAnalyzer.ImportProvider]
+                import_stmts = self._import_metadata[importing_module][ImportGraphAnalyzer.ImportProvider][importing_module.content.cst]
                 identifier_imported = False
 
                 for import_stmt in import_stmts:
@@ -133,6 +133,27 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
                     modules_importing_identifier.append(importing_module)
 
             return modules_importing_identifier
+
+        @functools.lru_cache()
+        def identifier_imported_in_module(self, identifier: str, module: PythonModule) -> bool:
+            import_stmts = self._import_metadata[module][ImportGraphAnalyzer.ImportProvider][module.content.cst]
+
+            for import_stmt in import_stmts:
+                if isinstance(import_stmt, ImportFrom):
+                    if isinstance(import_stmt.names, ImportStar):
+                        if not self.import_graph_known:
+                            # import graph not known and star import -- assume identifier imported
+                            return True
+
+                        return True  # TODO
+                    else:
+                        for imported_name in import_stmt.names:
+                            name = imported_name.name.value if isinstance(imported_name.name, Name) else imported_name.name.attr.value
+
+                            if name == identifier:
+                                return True
+
+            return False
 
     class ImportProvider(VisitorMetadataProvider[Iterable[Union[Import, ImportFrom]]]):
         def __init__(self, *args, **kwargs):

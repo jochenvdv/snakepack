@@ -95,6 +95,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename keyword argument names
                 return self._dont_rename(node)
 
+            if self._analyses[ImportGraphAnalyzer].identifier_imported_in_module(node.value, self._subject):
+                # don't rename variable name as it is imported
+                return self._dont_rename(node)
+
             if (
                     not self._options.only_rename_locals
                     and self._analyses[ImportGraphAnalyzer].import_graph_known
