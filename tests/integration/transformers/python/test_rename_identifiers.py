@@ -60,11 +60,11 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
             a = b + f
             e.attr = 'bar'
             def imported(a, b, c):
-                k = True
+                j = True
             
                 def g():
-                    nonlocal k
-                    print(k)
+                    nonlocal j
+                    print(j)
             h = 5
             h = 6
             
@@ -123,6 +123,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                 def func2(some_var: SomeClazz):
                     var2 = 2
                     print(some_var)
+                    some_var = 'reassigned'
                     
                     def func3(other_var):
                         print(some_var)
@@ -172,6 +173,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                 def c(some_var: SomeClazz):
                     d = 2
                     print(some_var)
+                    some_var = 'reassigned'
 
                     def e(other_var):
                         print(some_var)

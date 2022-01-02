@@ -43,6 +43,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             self._renames: Dict[CSTNode, str] = {}
             self._renames_scope_map: Dict[Scope, Dict[str, str]] = {}
             self._excluded_names = set()
+            self._no_renames = set()
 
         def visit_Import(self, node: Import) -> Optional[bool]:
             # don't rename import identifiers
@@ -56,7 +57,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
             for name_item in node.names:
                 name = name_item.name.value
 
-                if name in self._excluded_names:
+                if name in self._excluded_names or name in self._no_renames:
                     continue
 
                 scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
@@ -71,24 +72,24 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 self._name_registry.register_name_for_scope(scope=scope, name=name)
 
         def visit_Name(self, node: Name) -> Optional[bool]:
-            if node in self._renames:
-                # already marked this identifier to be renamed
+            if node in self._renames or node in self._no_renames:
+                # already marked this identifier to (not) be renamed
                 return
 
             if node.value in self._excluded_names:
                 # identifier is excluded from renaming
-                return
+                return self._dont_rename(node)
 
             if self._options.only_rename_locals and not self._analyses[ScopeAnalyzer].is_in_local_scope(node):
-                return
+                return self._dont_rename(node)
 
             if self._analyses[ScopeAnalyzer].is_attribute(node):
                 # don't rename class attributes (nearly impossible to find all references through static analysis)
-                return
+                return self._dont_rename(node)
 
             if self._analyses[ScopeAnalyzer].is_type_annotation(node):
                 # don't rename type annotations
-                return
+                return self._dont_rename(node)
 
             if (
                     not self._options.only_rename_locals
@@ -96,13 +97,13 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                     and len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, node.value)) > 0
             ):
                 # don't rename because this identifier is imported in another module
-                return
+                return self._dont_rename(node)
 
             scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
 
             if isinstance(scope, BuiltinScope):
                 # don't rename builtins
-                return
+                return self._dont_rename(node)
 
             if (
                     not self._options.only_rename_locals
@@ -110,21 +111,25 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                     and isinstance(scope, (GlobalScope, ClassScope))
             ):
                 # don't rename because import graph is unknown and node is in global or class scope
-                return
+                return self._dont_rename(node)
 
             current_scope = scope
+            to_rename = []
             done = False
 
             while not done:
                 for assignment in current_scope.assignments[node.value]:
-
-                    if not self._options.only_rename_locals or not isinstance(assignment.node, Param):
-                        self._rename_identifier(node, scope, assignment)
+                    to_rename.append(assignment)
 
                 if isinstance(current_scope, (BuiltinScope, GlobalScope)):
                     done = True
 
                 current_scope = current_scope.parent
+
+            if not self._options.only_rename_locals or not any(map(lambda x: isinstance(x.node, Param), to_rename)):
+                for assignment in to_rename:
+                    if not assignment.node in self._no_renames:
+                        self._rename_identifier(node, scope, assignment)
 
         def leave_Name(self, original_node: Name, updated_node: Name) -> BaseExpression:
             if original_node in self._renames and updated_node.value not in self._excluded_names:
@@ -150,7 +155,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             if len(new_name) >= len(node.value):
                 # don't rename because new identifier is not shorter
-                return
+                return self._dont_rename(node)
 
             self._renames[node] = new_name
 
@@ -162,7 +167,8 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             if assignment is not None:
                 for access in assignment.references:
-                    self._renames[access.node] = new_name
+                    if access.node not in self._no_renames:
+                        self._renames[access.node] = new_name
 
         def _identifier_renamed_in_scope(self, name: str, scope: Scope, by_new_name=False) -> Optional[Scope]:
             current_scope = scope
@@ -183,8 +189,11 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             return None
 
+        def _dont_rename(self, node):
+            self._no_renames.add(node)
+
+
     class Options(PythonModuleTransformer.Options):
         only_rename_locals: bool = True
-
 
     __config_name__ = 'rename_identifiers'
