@@ -1,7 +1,7 @@
 from typing import Optional, Union, Dict, Mapping, Type
 
 from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
-    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal, Param
+    MaybeSentinel, Name, BaseExpression, CSTNode, Import, ImportFrom, Nonlocal, Param, Global, Module
 from libcst.metadata import ExpressionContextProvider, ExpressionContext, ScopeProvider, ParentNodeProvider, Scope, \
     GlobalScope, ClassScope, Assignment, BuiltinScope
 
@@ -52,6 +52,11 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
         def visit_ImportFrom(self, node: ImportFrom) -> Optional[bool]:
             # don't rename import identifiers
             return False
+
+        def visit_Global(self, node: Global) -> Optional[bool]:
+            if self._options.only_rename_locals:
+                # identifier wasn't renamed in scope above, so won't be renaming it here
+                return False
 
         def visit_Nonlocal(self, node: Nonlocal) -> Optional[bool]:
             for name_item in node.names:

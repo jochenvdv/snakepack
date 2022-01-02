@@ -33,7 +33,7 @@ class PythonModule(Asset[Python]):
         if not isinstance(selector, FullyQualifiedPythonName):
             return False
 
-        return not selector.has_module_path or selector.has_ident_path or '.'.join(selector.module_path) == self._name
+        return not selector.has_module_path or selector.has_ident_path or self._name.startswith('.'.join(selector.module_path))
 
     @classmethod
     def from_string(cls, name: str, content: str, **kwargs) -> Asset[T]:

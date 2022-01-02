@@ -16,7 +16,7 @@ from snakepack.config.types import FullyQualifiedPythonName
 from snakepack.loaders.python import ImportGraphLoader, PackageLoader
 from snakepack.packagers.generic import DirectoryPackager
 from snakepack.transformers.python import __all__ as all_transformers
-
+from transformers.python import RenameIdentifiersTransformer
 
 ALL_TRANSFORMERS = [transformer.__config_name__ for transformer in all_transformers]
 
@@ -77,7 +77,7 @@ class BaseAcceptanceTest:
                             bundler=ComponentConfig(name='file'),
                             loader=loader_config,
                             transformers=[
-                                ComponentConfig(name=transformer_name)
+                                self._create_transformer_config(transformer_name)
                                 for transformer_name in transformers
                             ]
                         )
@@ -177,3 +177,19 @@ class BaseAcceptanceTest:
                 total_size_in_bytes += sub_path.stat().st_size
 
         return num_files, total_size_in_bytes
+
+    def _create_transformer_config(self, transformer_name) -> ComponentConfig:
+        if transformer_name == 'rename_identifiers':
+            return ComponentConfig(
+                name=transformer_name,
+                options=RenameIdentifiersTransformer.Options(
+                    excludes=[
+                        'pkg_resources',
+                        'loky',
+                        'pydantic',
+                        'libcst'
+                    ]
+                )
+            )
+
+        return ComponentConfig(name=transformer_name)
