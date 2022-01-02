@@ -121,7 +121,6 @@ class BaseAcceptanceTest:
             import snakepack.app
             result = cli_runner.invoke(snakepack.app.snakepack, [f'--config-file={config_path}'])
             print(result.output)
-
             assert result.exit_code == 0, 'Snakepack invocation failed'
 
         # test compilation of output files
@@ -156,6 +155,7 @@ class BaseAcceptanceTest:
                         mode='exec'
                     )
                 except SyntaxError as e:
+                    print("Failed: " + sub_path, file_content)
                     failed_compilations.append(sub_path)
             elif sub_path.is_dir():
                 failed_compilations.extend(BaseAcceptanceTest._check_dir_compilation(sub_path))
@@ -188,6 +188,16 @@ class BaseAcceptanceTest:
                         'loky',
                         'pydantic',
                         'libcst'
+                    ]
+                )
+            )
+
+        if transformer_name == 'remove_unreferenced_code':
+            return ComponentConfig(
+                name=transformer_name,
+                options=RenameIdentifiersTransformer.Options(
+                    excludes=[
+                        'typing_extensions'
                     ]
                 )
             )

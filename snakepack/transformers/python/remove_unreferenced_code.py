@@ -20,7 +20,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
         def leave_FunctionDef(
                 self, original_node: FunctionDef, updated_node: FunctionDef
         ) -> Union[BaseStatement, FlattenSentinel[BaseStatement], RemovalSentinel]:
-            if not self._is_referenced(original_node, updated_node.name.value):
+            if not self._is_referenced(original_node, updated_node.name.value, assignment=False):
                 return RemovalSentinel.REMOVE
 
             return updated_node
@@ -28,7 +28,7 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
         def leave_ClassDef(
                 self, original_node: ClassDef, updated_node: ClassDef
         ) -> Union[BaseStatement, FlattenSentinel[BaseStatement], RemovalSentinel]:
-            if not self._is_referenced(original_node, updated_node.name.value):
+            if not self._is_referenced(original_node, updated_node.name.value, assignment=False):
                 return RemovalSentinel.REMOVE
 
             return updated_node
@@ -111,20 +111,18 @@ class RemoveUnreferencedCodeTransformer(PythonModuleTransformer):
 
             return RemovalSentinel.REMOVE
 
-        def _is_referenced(self, node: CSTNode, identifier: str) -> bool:
-            scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
-            #assert identifier in scope
+        def _is_referenced(self, node: CSTNode, identifier: str, assignment=True) -> bool:
+            if not assignment and self._analyses[ScopeAnalyzer].is_in_local_scope(node):
+                scope = self._analyses[ScopeAnalyzer].get_scope_for_node(node)
 
-            if identifier in scope.accesses:
-                return True
+                if identifier in scope.accesses:
+                    # only remove unreferenced code in local scope
+                    return True
 
-            if isinstance(scope, (GlobalScope, ClassScope)):
-                if self._analyses[ImportGraphAnalyzer].import_graph_known:
-                    return len(self._analyses[ImportGraphAnalyzer].get_importing_modules(self._subject, identifier)) > 0
+                return False
 
-                # assume referenced - import graph is not known so we don't touch global scope
-                return True
-            return False
+            # fallback to assuming the code is referenced
+            return True
 
     __config_name__ = 'remove_unreferenced_code'
 

@@ -70,6 +70,27 @@ class ImportGraphAnalyzer(PostLoadingAnalyzer):
             assert self.import_graph_known
 
             importing_nodes = self._module_graph.getReferers(self._node_map[module])
+            importing_modules = []
+
+            for importing_node in importing_nodes:
+                if importing_node is None:
+                    continue
+
+                if isinstance(importing_node, Extension):
+                    importing_modules.append(importing_node)
+                    continue
+
+                if importing_node not in self._inverted_node_map:
+                    # this is the case with the entry point module (Script <> SourceModule), match on filename instead
+                    for map_key in self._inverted_node_map:
+                        if map_key.filename == importing_node.filename:
+                            importing_modules.append(self._inverted_node_map[map_key])
+                            break
+
+                    continue
+
+                importing_modules.append(self._inverted_node_map[importing_node])
+
             importing_modules = [
                     self._inverted_node_map[importing_node] if not isinstance(importing_node, Extension) else importing_node
                     for importing_node in importing_nodes if importing_node is not None
