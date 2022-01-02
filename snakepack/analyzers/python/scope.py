@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 from typing import Union, List, Iterable
 
-from libcst import MetadataWrapper, CSTNode, Name, Attribute, ClassDef, FunctionDef, Param, Annotation
+from libcst import MetadataWrapper, CSTNode, Name, Attribute, ClassDef, FunctionDef, Param, Annotation, Arg
 from libcst.metadata import ScopeProvider, ExpressionContextProvider, Scope, ParentNodeProvider, ClassScope, \
     ComprehensionScope, FunctionScope, GlobalScope
 
@@ -82,6 +82,11 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
         @functools.lru_cache()
         def is_type_annotation(self, node: CSTNode) -> bool:
             return isinstance(self._metadata[ParentNodeProvider][node], Annotation)
+
+        @functools.lru_cache()
+        def is_keyword_arg(self, node: CSTNode) -> bool:
+            parent = self._metadata[ParentNodeProvider][node]
+            return isinstance(parent, Arg) and parent.keyword is node
 
     __config_name__ = 'scope'
 

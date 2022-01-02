@@ -91,6 +91,10 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
                 # don't rename type annotations
                 return self._dont_rename(node)
 
+            if self._analyses[ScopeAnalyzer].is_keyword_arg(node):
+                # don't rename keyword argument names
+                return self._dont_rename(node)
+
             if (
                     not self._options.only_rename_locals
                     and self._analyses[ImportGraphAnalyzer].import_graph_known
@@ -119,7 +123,8 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             while not done:
                 for assignment in current_scope.assignments[node.value]:
-                    to_rename.append(assignment)
+                    if not self._options.only_rename_locals or self._analyses[ScopeAnalyzer].is_in_local_scope(assignment.node):
+                        to_rename.append(assignment)
 
                 if isinstance(current_scope, (BuiltinScope, GlobalScope)):
                     done = True
@@ -128,7 +133,7 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
             if not self._options.only_rename_locals or not any(map(lambda x: isinstance(x.node, Param), to_rename)):
                 for assignment in to_rename:
-                    if not assignment.node in self._no_renames:
+                    if assignment.node not in self._no_renames:
                         self._rename_identifier(node, scope, assignment)
 
         def leave_Name(self, original_node: Name, updated_node: Name) -> BaseExpression:
@@ -191,7 +196,6 @@ class RenameIdentifiersTransformer(PythonModuleTransformer):
 
         def _dont_rename(self, node):
             self._no_renames.add(node)
-
 
     class Options(PythonModuleTransformer.Options):
         only_rename_locals: bool = True

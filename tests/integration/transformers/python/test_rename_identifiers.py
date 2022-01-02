@@ -126,7 +126,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                     some_var = 'reassigned'
                     
                     def func3(other_var):
-                        print(some_var)
+                        print(var2=some_var)
                         print(other_var)
                         print(var1 + var2)
             """
@@ -176,7 +176,7 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                     some_var = 'reassigned'
 
                     def e(other_var):
-                        print(some_var)
+                        print(var2=some_var)
                         print(other_var)
                         print(b + d)
             """
