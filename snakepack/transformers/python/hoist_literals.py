@@ -129,11 +129,17 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
 
                 for stmt_index, stmt in enumerate(stmt_block.body):
                     if (
-                            not isinstance(stmt, ImportFrom)
-                            or not isinstance(stmt.module, Name)
-                            or stmt.module.value != '__future__'
+                            not (
+                                    isinstance(stmt, ImportFrom)
+                                    and isinstance(stmt.module, Name)
+                                    and stmt.module.value == '__future__'
+                            )
+                            and not (
+                                    isinstance(stmt, Expr)
+                                    and isinstance(stmt.value, SimpleString)
+                            )
                     ):
-                        # not a from __future__ import, so we can hoist assign before this stmt
+                        # not a from __future__ import or module doc, so we can hoist assign before this stmt
                         updated_stmt_block_body = [
                             *updated_stmt_block_body[:stmt_index],
                             *hoist_assignments,

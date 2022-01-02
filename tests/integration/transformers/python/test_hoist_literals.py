@@ -19,6 +19,7 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
     def test_transform(self):
         input_content = dedent(
             """
+            \"\"\" module doc \"\"\"
             from __future__ import annotations; from __future__ import absolute_import
             from __future__ import division
             foo('some_long_string', x['some_long_string'])
@@ -55,6 +56,7 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
 
         expected_output_content = dedent(
             """
+            \"\"\" module doc \"\"\"
             from __future__ import annotations; from __future__ import absolute_import
             from __future__ import division
             a='some_long_string'; b='r'; c='hello'; d='nope'; e='some_very_long_string'; f='again_some_very_long_string'; foo(a, x[a])
