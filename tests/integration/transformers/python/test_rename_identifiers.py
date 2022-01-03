@@ -185,7 +185,6 @@ class RenameIdentifiersTransformerIntegrationTest(PythonModuleCstTransformerInte
                         print(other_var)
                         print(b + d)
             
-            
             def importtest():
                 imported_var: SomeType
                 

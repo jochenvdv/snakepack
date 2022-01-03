@@ -51,25 +51,33 @@ class RemoveUnreferencedCodeTransformerIntegrationTest(PythonModuleCstTransforme
         )
 
         expected_output_content = dedent(
-                    """
+                    """   
                     def imported(a, b):
-                        pass
+                        x = 5
+                    not_used = 'indeed'
                     class UsedInternally:
                         x = 5
+                    def _internal():
+                        pass
                     def _used(obj):
                         pass
                     _used(UsedInternally())
+                    class _NotUsed:
+                        pass
+                    useless: int = 400
                     useful: int = 200
                     assert useful
                     import bar
                     bar.foo()
+                    import nope
                     import something as other
                     other.ok()
-                    import a as b, e as f
+                    import something as unused
+                    import a as b, c as d, e as f
                     print(b, f)
-                    from ... import z as zz
+                    from ... import u as v, x as y, z as zz
                     from module import *
-                    from module2 import var
+                    from module2 import func, var
                     print(var, zz)
                     """
                 )

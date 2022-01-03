@@ -125,7 +125,6 @@ class RemoveWhitespaceTransformerIntegrationTest(PythonModuleCstTransformerInteg
                 c,
                 d
             )
-            #0#
             
             \"\"\"module docstring\"\"\"
 
@@ -178,9 +177,7 @@ class RemoveWhitespaceTransformerIntegrationTest(PythonModuleCstTransformerInteg
             def baz(b):yield from b()
             x if True else y;lambda:None;lambda a,*b,c:None;"foo""foo";f"a{b}c";[*foo];{'foo':True,**foo};(foo);a['foo'];[a for a in b if c is True and False or True];not foo;-1;1+1;1==1;1 not in [];foo is not True;from a import (b,c);from a import (b,#this is a comment
             #this as well
-            c,d)
-            #0#
-            \"\"\"module docstring\"\"\";from typing import Any
+            c,d);\"\"\"module docstring\"\"\";from typing import Any
             #comment
             import sys#trailing whitespace
             #leading comment

@@ -16,7 +16,7 @@ from snakepack.config.types import FullyQualifiedPythonName
 from snakepack.loaders.python import ImportGraphLoader, PackageLoader
 from snakepack.packagers.generic import DirectoryPackager
 from snakepack.transformers.python import __all__ as all_transformers
-from transformers.python import RenameIdentifiersTransformer
+from snakepack.transformers.python import RenameIdentifiersTransformer
 
 ALL_TRANSFORMERS = [transformer.__config_name__ for transformer in all_transformers]
 

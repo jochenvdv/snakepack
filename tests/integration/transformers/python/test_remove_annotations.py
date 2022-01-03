@@ -3,7 +3,7 @@ from typing import Iterable
 
 from libcst import parse_module
 
-from analyzers import Analyzer
+from snakepack.analyzers import Analyzer
 from snakepack.analyzers.python.scope import ScopeAnalyzer
 from snakepack.assets.python import PythonModuleCst
 from snakepack.config.model import GlobalOptions

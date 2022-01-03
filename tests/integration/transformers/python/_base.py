@@ -21,9 +21,12 @@ class PythonModuleCstTransformerIntegrationTestBase:
     _TRANSFORMER_CLASS = NotImplemented
     _TRANSFORMER_OPTIONS = None
 
+    # hypothesis generates Python syntax that exposes a bug in Libcst's parser
+    # we exclude these (unrealistic) examples from testing for now
     _EXCLUDED_EXAMPLES = {
         '\n \x0cpass#',
-        '\n\\\n#'
+        '\n\\\n#',
+        '\n \x0cpass\n'
     }
 
     @pytest.mark.hypothesis

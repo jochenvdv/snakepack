@@ -55,38 +55,38 @@ class HoistLiteralsTransformerIntegrationTest(PythonModuleCstTransformerIntegrat
         )
 
         expected_output_content = dedent(
-            """
+            """               
             \"\"\" module doc \"\"\"
             from __future__ import annotations; from __future__ import absolute_import
             from __future__ import division
-            a='some_long_string'; b='r'; c='assigned'; d='hello'; e='nope'; f='some_very_long_string'; g='again_some_very_long_string'; foo(a, x[a])
-            bar(a)
+            c='some_long_string'; d='r'; e='assigned'; f='hello'; g='nope'; h='some_very_long_string'; i='again_some_very_long_string'; foo(c, x[c])
+            bar(c)
             foo('s', x['s'])
-            foo(b, b, b)
-            x = c
-            foo(c, c, c)
-            bar(d, d, d)
-            z = d
+            foo(d, d, d)
+            x = e
+            foo(e, e, e)
+            bar(f, f, f)
+            z = f
             p = 'test'
             def test():
-                o = e
+                o = g
             def func(a, b):
                 print(p)
-                print(e)
+                print(g)
             
             def test():
                 a = False
                 b = False
-                print(f)
-                print(f)
+                print(h)
+                print(h)
             
-            print(g)
-            print(g)
+            print(i)
+            print(i)
             
             def other_test():
                 a = False
-                print(f)
-                print(f)
+                print(h)
+                print(h)
 
             """
         )

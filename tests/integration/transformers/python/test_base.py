@@ -28,11 +28,11 @@ class BatchPythonModuleTransformerIntegrationTest(PythonModuleCstTransformerInte
 
         expected_output_content = dedent(
             """
-            x = 5
-            def func(param): pass
+            x: int = 5
+            def func(param: str) -> bool: pass
             class Foo:
                 attr: str
-                anattr = 7
+                anattr: int = 7
             x=5; 
             
             x = 5 
@@ -41,12 +41,15 @@ class BatchPythonModuleTransformerIntegrationTest(PythonModuleCstTransformerInte
 
         self._test_transformation(input=input_content, expected_output=expected_output_content)
 
-    def _create_transformer(self) -> PythonModuleTransformer:
+    def _create_transformer(self, options=None) -> PythonModuleTransformer:
         global_options = GlobalOptions()
+
+        if options is None:
+            options = BatchPythonModuleTransformer.Options()
+
         transformers = [
-            RemoveAnnotationsTransformer(global_options=global_options),
-            RemoveAssertionsTransformer(global_options=global_options),
-            RemoveCommentsTransformer(global_options=global_options)
+            RemoveAssertionsTransformer(global_options=global_options, options=options),
+            RemoveCommentsTransformer(global_options=global_options, options=options)
         ]
         batch_transformer = BatchPythonModuleTransformer(transformers=transformers, global_options=global_options)
 
