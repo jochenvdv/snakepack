@@ -28,6 +28,7 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
             super().__init__(*args, **kwargs)
             self._name_registry = NameRegistry()
             self._hoisted_literals: Dict[str, Tuple[str, BaseExpression]] = {}
+            self._reuse_existing_assignments = False
 
         def leave_SimpleString(self, original_node: SimpleString, updated_node: SimpleString) -> BaseExpression:
             if self._analyses[LiteralDuplicationAnalyzer].is_part_of_concatenated_string(original_node):
@@ -48,7 +49,8 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
             )
 
             if (
-                    assignments is not None and len(assignments) > 0
+                    self._reuse_existing_assignments
+                    and assignments is not None and len(assignments) > 0
                     and all(map(lambda x: self._analyses[ScopeAnalyzer].get_scope_for_node(x) is scope, occurrences))
             ):
                 # use existing assigned identifier
@@ -63,22 +65,29 @@ class HoistLiteralsTransformer(PythonModuleTransformer):
                     new_identifier = self._hoisted_literals[updated_node.value][0]
                 else:
                     # first time calculating hoisting impact for this literal, generate new identifier
-                    new_identifier = self._name_registry.generate_name_for_scope(scope=scope.globals)
+                    new_identifier = None
+                    all_scopes = self._analyses[ScopeAnalyzer].get_all_scopes()
 
-                non_hoisted_char_count = len(updated_node.value) * len(occurrences)
-                assign_char_count = len(updated_node.value) + 1 + len(new_identifier)
-                hoisted_char_count = assign_char_count + (2 * len(new_identifier))
+                    while (
+                            new_identifier is None
+                            or any(map(lambda x: new_identifier in x.assignments, all_scopes))
+                    ):
+                        # generate new name that is not referenced yet in the current scope
+                        new_identifier = self._name_registry.generate_name_for_scope(scope=scope.globals)
 
-                if non_hoisted_char_count <= hoisted_char_count:
-                    # don't hoist because no size reduction
-                    self._name_registry.reset(scope=scope.globals)
-                    return updated_node
+                    non_hoisted_char_count = len(updated_node.value) * len(occurrences)
+                    assign_char_count = len(updated_node.value) + 1 + len(new_identifier)
+                    hoisted_char_count = assign_char_count + (2 * len(new_identifier))
 
-                if updated_node.value not in self._hoisted_literals:
+                    if non_hoisted_char_count <= hoisted_char_count:
+                        # don't hoist because no size reduction
+                        self._name_registry.reset(scope=scope.globals)
+                        return updated_node
+
                     # we'll be using the generated identifier for hoisting
                     self._name_registry.register_name_for_scope(scope=scope.globals, name=new_identifier)
 
-            if not use_existing_assignment:
+            if not self._reuse_existing_assignments or not use_existing_assignment:
                 # mark the literal for hoisting with a new variable assignment
                 self._hoisted_literals[updated_node.value] = new_identifier, updated_node
             else:

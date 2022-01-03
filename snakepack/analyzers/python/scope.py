@@ -100,6 +100,10 @@ class ScopeAnalyzer(PythonModuleCstAnalyzer):
         def uses_nonlocal_stmt(self, module: Module) -> bool:
             return self._metadata[ScopeAnalyzer._GlobalsLocalsProvider][module]['uses_nonlocal_stmt']
 
+        @functools.lru_cache()
+        def get_all_scopes(self) -> Iterable[Scope]:
+            return set(self._metadata[ScopeProvider].values())
+
     class _GlobalsLocalsProvider(VisitorMetadataProvider):
         def __init__(self, *args, **kwargs):
             self._uses_global_stmt = False
