@@ -1,0 +1,3 @@
+[submodule "tests/acceptance/subjects/pydantic"]
+	path = tests/acceptance/subjects/pydantic
+	url = https://github.com/samuelcolvin/pydantic

@@ -1,4 +1,5 @@
 import importlib
+import pkgutil
 import shutil
 import subprocess
 import sys
@@ -8,6 +9,7 @@ from typing import Tuple, Iterable
 from uuid import uuid4
 
 import pytest
+from boltons.iterutils import first
 
 from snakepack.config.formats import generate_yaml_config
 from snakepack.config.model import SnakepackConfig, PackageConfig, BundleConfig
@@ -33,6 +35,7 @@ class BaseAcceptanceTest:
     _LIBRARY_PACKAGES = NotImplemented
     _TEST_CMD = NotImplemented
     _EXTRA_TEST_FILES = NotImplemented
+    _PRETEST_CMD = NotImplemented
 
     def _create_application_config(self, test_path, transformers=None, roundtrip=False):
         if transformers is None:
@@ -217,21 +220,51 @@ class BaseAcceptanceTest:
                 name=transformer_name,
                 options=RenameIdentifiersTransformer.Options(
                     excludes=[
-                        'typing_extensions'
+                        'typing_extensions',
+                        'pkg_resources'
                     ]
                 )
             )
 
-        return ComponentConfig(name=transformer_name)
+        transformer_class = first(filter(lambda x: x.__config_name__ == transformer_name, all_transformers))
 
-    def _test_library_compiled_output(self, test_path: Path) -> bool:
+        return ComponentConfig(
+            name=transformer_name,
+            options=transformer_class.Options(
+                excludes=[
+                    'pkg_resources'
+                ]
+            )
+        )
+
+    def _prepare_virtual_env(self, venv):
+        pretest_cmd = self._PRETEST_CMD.format(venv_path=venv.bin)
+        print(pretest_cmd)
+
+        try:
+            result = subprocess.check_output(
+                args=pretest_cmd,
+                shell=True,
+                stderr=subprocess.STDOUT
+            )
+        except subprocess.CalledProcessError as e:
+            print(e.output.decode('utf-8'))
+            pytest.fail('Failed to execute pre-install command')
+
+    def _test_library_compiled_output(self, test_path: Path, venv=None) -> bool:
+        if venv is not None:
+            self._prepare_virtual_env(venv)
+
         dist_path = test_path / 'dist-initial' / self._SUBJECT_NAME
-        command = self._TEST_CMD.format(dist_path=str(dist_path))
+        command = self._TEST_CMD.format(
+            dist_path=str(dist_path),
+            venv_path=venv.bin if venv else '.'
+        )
         print(command)
 
         for extra_file in self._EXTRA_TEST_FILES:
             input_path = self._SOURCEDIR / extra_file
-            output_path = test_path / 'dist-initial' / extra_file
+            output_path = test_path / 'dist-initial' / self._SUBJECT_NAME / extra_file
             content = input_path.read_text()
             output_path.write_text(content)
 
@@ -239,7 +272,7 @@ class BaseAcceptanceTest:
             result = subprocess.check_output(
                 args=command,
                 shell=True,
-                stderr=subprocess.STDOUT
+                stderr=subprocess.STDOUT,
             )
             print(result.decode('utf-8'))
             tests_pass = True

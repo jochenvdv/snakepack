@@ -488,6 +488,21 @@ pytest = ">=2.9"
 termcolor = ">=1.1.0"
 
 [[package]]
+name = "pytest-venv"
+version = "0.2.1"
+description = "py.test fixture for creating a virtual environment"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pytest = "*"
+virtualenv = "*"
+
+[package.extras]
+testing = ["coverage"]
+
+[[package]]
 name = "pytest-xdist"
 version = "2.5.0"
 description = "pytest xdist plugin for distributed testing and loop-on-failing modes"
@@ -687,7 +702,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <=3.10"
-content-hash = "b94a58e8b0ec06cb6aa804015070902f8b03bae7f861ecac027811f19c2dd456"
+content-hash = "a877608ccc5dd52712b6c66663393d726a2cfcae8510c81b321ed305c22034c1"
 
 [metadata.files]
 altgraph = [
@@ -968,6 +983,10 @@ pytest-randomly = [
 ]
 pytest-sugar = [
     {file = "pytest-sugar-0.9.4.tar.gz", hash = "sha256:b1b2186b0a72aada6859bea2a5764145e3aaa2c1cfbb23c3a19b5f7b697563d3"},
+]
+pytest-venv = [
+    {file = "pytest-venv-0.2.1.tar.gz", hash = "sha256:169fc8e3555cedfd21cf6208446ad9082ee7a041b60e2d370f1c684fb28d282f"},
+    {file = "pytest_venv-0.2.1-py2.py3-none-any.whl", hash = "sha256:5c095aeb7ca6e84bb995c895f3c688bd6b0923967fd7252c55207ce1929c7cd1"},
 ]
 pytest-xdist = [
     {file = "pytest-xdist-2.5.0.tar.gz", hash = "sha256:4580deca3ff04ddb2ac53eba39d76cb5dd5edeac050cb6fbc768b0dd712b4edf"},
