@@ -31,8 +31,13 @@ class BaseAcceptanceTest:
     _APPLICATION_ENTRY_POINT = NotImplemented
     _EXTRA_INCLUDES = NotImplemented
     _LIBRARY_PACKAGES = NotImplemented
+    _TEST_CMD = NotImplemented
+    _EXTRA_TEST_FILES = NotImplemented
 
     def _create_application_config(self, test_path, transformers=None, roundtrip=False):
+        if transformers is None:
+            transformers = []
+
         loader_config = ComponentConfig(
             name='import_graph',
             options=ImportGraphLoader.Options(
@@ -40,22 +45,46 @@ class BaseAcceptanceTest:
                 includes=self._EXTRA_INCLUDES
             )
         )
-        config = self._create_config(test_path, loader_config, transformers, roundtrip)
+        bundles = {
+            self._SUBJECT_NAME: BundleConfig(
+                bundler=ComponentConfig(name='file'),
+                loader=loader_config,
+                transformers=[
+                    self._create_transformer_config(transformer_name)
+                    for transformer_name in transformers
+                ]
+            )
+        }
+        config = self._create_config(test_path, bundles, transformers, roundtrip)
 
         return config
 
     def _create_library_config(self, test_path, transformers=None, roundtrip=False):
-        loader_config = ComponentConfig(
-            name='package',
-            options=PackageLoader.Options(
-                pkg_name=FullyQualifiedPythonName('snakepack'),
+        if transformers is None:
+            transformers = []
+
+        bundles = {
+            library_pkg: BundleConfig(
+                bundler=ComponentConfig(name='file'),
+                loader=ComponentConfig(
+                    name='package',
+                    options=PackageLoader.Options(
+                        pkg_name=FullyQualifiedPythonName(library_pkg),
+                    )
+                ),
+                transformers=[
+                    self._create_transformer_config(transformer_name)
+                    for transformer_name in transformers
+                ]
             )
-        )
-        config = self._create_config(test_path, loader_config, transformers, roundtrip)
+            for library_pkg in self._LIBRARY_PACKAGES
+        }
+
+        config = self._create_config(test_path, bundles, transformers, roundtrip)
 
         return config
 
-    def _create_config(self, test_path, loader_config, transformers, roundtrip):
+    def _create_config(self, test_path, bundles, transformers, roundtrip):
         if transformers is None:
             transformers = []
 
@@ -72,16 +101,7 @@ class BaseAcceptanceTest:
             packages={
                 self._SUBJECT_NAME: PackageConfig(
                     packager=ComponentConfig(name='directory'),
-                    bundles={
-                        self._SUBJECT_NAME: BundleConfig(
-                            bundler=ComponentConfig(name='file'),
-                            loader=loader_config,
-                            transformers=[
-                                self._create_transformer_config(transformer_name)
-                                for transformer_name in transformers
-                            ]
-                        )
-                    }
+                    bundles=bundles
                 )
             }
         )
@@ -203,3 +223,28 @@ class BaseAcceptanceTest:
             )
 
         return ComponentConfig(name=transformer_name)
+
+    def _test_library_compiled_output(self, test_path: Path) -> bool:
+        dist_path = test_path / 'dist-initial' / self._SUBJECT_NAME
+        command = self._TEST_CMD.format(dist_path=str(dist_path))
+        print(command)
+
+        for extra_file in self._EXTRA_TEST_FILES:
+            input_path = self._SOURCEDIR / extra_file
+            output_path = test_path / 'dist-initial' / extra_file
+            content = input_path.read_text()
+            output_path.write_text(content)
+
+        try:
+            result = subprocess.check_output(
+                args=command,
+                shell=True,
+                stderr=subprocess.STDOUT
+            )
+            print(result.decode('utf-8'))
+            tests_pass = True
+        except subprocess.CalledProcessError as e:
+            print(e.output.decode('utf-8'))
+            tests_pass = False
+
+        assert tests_pass, 'Running test suite on compiled files fails'

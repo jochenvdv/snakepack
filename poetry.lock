@@ -687,7 +687,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <=3.10"
-content-hash = "481ed9172f8d0adf8d595f8caf60cf61b61bbd201d5baa9299e594d7463c5bd6"
+content-hash = "b94a58e8b0ec06cb6aa804015070902f8b03bae7f861ecac027811f19c2dd456"
 
 [metadata.files]
 altgraph = [
