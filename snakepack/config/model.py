@@ -17,6 +17,7 @@ class GlobalOptions(BaseModel):
     source_base_path: Path = Path('./')
     target_base_path: Path = Path('dist/')
     target_version: PythonVersion = PythonVersion.current()
+    ignore_errors: bool = True
 
 
 class BundleConfig(BaseModel):

@@ -88,7 +88,7 @@ class Compiler:
     def _transform_assets(self):
         for package in self._packages:
             for bundle in package.bundles.values():
-                self._executor.logger.info(f"# Running transformers for package '{package.name}': bundle '{bundle.name}' ---")
+                self._executor.logger.info(f"# Running transformers for package '{package.name}' & bundle '{bundle.name}' ---")
                 sync_tasks = []
                 parallel_tasks = []
 
@@ -115,7 +115,7 @@ class Compiler:
                         Task(
                             start_msg=f"... Running simple transformers on asset '{asset.name}'",
                             complete_msg='',
-                            fail_msg=f"! Failed to execute simple transformers on asset '{asset.name}' - exiting",
+                            fail_msg=f"! Failed to execute simple transformers on asset '{asset.name}'{'- exiting' if self._config.ignore_errors else ''}",
                             callable=partial(
                                 Compiler._transform_asset_parallel,
                                 asset=asset,
@@ -128,7 +128,7 @@ class Compiler:
                         Task(
                             start_msg=f"... Running complex transformers on asset '{asset.name}'",
                             complete_msg='',
-                            fail_msg=f"! Failed to execute complex transformers on asset '{asset.name}' - exiting",
+                            fail_msg=f"! Failed to execute complex transformers on asset '{asset.name}'{'- exiting' if self._config.ignore_errors else ''}",
                             callable=partial(
                                 Compiler._transform_asset,
                                 asset=asset,
@@ -138,8 +138,8 @@ class Compiler:
                         )
                     )
 
-                list(self._executor.execute(sync_tasks, parallel=False))
-                list(self._executor.execute(parallel_tasks, parallel=True))
+                list(self._executor.execute(sync_tasks, parallel=False, ignore_errors=self._config.ignore_errors))
+                list(self._executor.execute(parallel_tasks, parallel=True, ignore_errors=self._config.ignore_errors))
 
     def _package_assets(self):
         nested_tasks = []
@@ -212,7 +212,14 @@ T = TypeVar('T')
 
 
 class Task:
-    def __init__(self, start_msg: str, complete_msg: str, fail_msg: str, callable: Optional[Callable[..., T]] = None, nested_tasks: Optional[List[Task]] = None):
+    def __init__(
+            self,
+            start_msg: str,
+            complete_msg: str,
+            fail_msg: str,
+            callable: Optional[Callable[..., T]] = None,
+            nested_tasks: Optional[List[Task]] = None,
+    ):
         self._start_msg = start_msg
         self._complete_msg = complete_msg
         self._fail_msg = fail_msg
@@ -258,30 +265,34 @@ class Executor(ABC):
         return self._logger
 
     @abstractmethod
-    def execute(self, tasks: Iterable[Task], parallel: bool) -> Iterable[Task]:
+    def execute(self, tasks: Iterable[Task], parallel: bool, ignore_errors: bool = False) -> Iterable[Task]:
         raise NotImplemented
 
-
-class SynchronousExecutor(Executor):
-    def execute(self, tasks: Iterable[Task], parallel: bool = False) -> Iterable[Task]:
-        return map(
-            lambda x: self._execute_task(x),
-            tasks
-        )
-
-    def _execute_task(self, task: Task):
+    def _execute_task(self, task: Task, ignore_errors: bool):
         self._logger.info(task.start_msg)
 
         if len(task.nested_tasks) > 0:
-            return list(self.execute(task.nested_tasks, parallel=False))
+            return list(self.execute(task.nested_tasks, parallel=False, ignore_errors=ignore_errors))
 
         try:
             result = task.run()
+            return result
         except Exception as e:
-            self._logger.error(task.fail_msg)
-            raise e
+            self._logger.error(task.fail_msg, exc_info=None)
 
-        return result
+            if not ignore_errors:
+                self._logger.critical(task.fail_msg)
+                raise e
+
+            return None
+
+
+class SynchronousExecutor(Executor):
+    def execute(self, tasks: Iterable[Task], parallel: bool = False, ignore_errors: bool = False) -> Iterable[Task]:
+        return map(
+            lambda x: self._execute_task(x, ignore_errors=ignore_errors),
+            tasks
+        )
 
 
 class ConcurrentExecutor(Executor):
@@ -291,11 +302,11 @@ class ConcurrentExecutor(Executor):
         os.environ['LOKY_PICKLER'] = 'cloudpickle'
         self._executor = get_reusable_executor()
 
-    def execute(self, tasks: Iterable[Task], parallel: bool = False) -> Iterable[Task]:
+    def execute(self, tasks: Iterable[Task], parallel: bool = False, ignore_errors: bool = False) -> Iterable[Task]:
         if parallel:
             return self._executor.map(
                 lambda x: x.run(),
                 tasks
             )
 
-        return self._sync_executor.execute(tasks)
+        return self._sync_executor.execute(tasks, ignore_errors=ignore_errors)
