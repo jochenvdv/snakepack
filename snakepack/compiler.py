@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+from logging import Logger
 from typing import Optional, Dict, Iterable, List, Callable, TypeVar, Type
 
 from loky import get_reusable_executor
@@ -39,11 +40,16 @@ class Compiler:
         self._package_assets()
 
     def _load_packages(self):
+        self._executor.logger.debug("# Initialising components ---")
+
         for package_name, package_config in self._config.packages.items():
+            self._executor.logger.debug(f"... Registering package '{package_name}'")
+
             packager = package_config.packager.initialize_component(global_options=self._config)
             bundles = []
 
             for bundle_name, bundle_config in package_config.bundles.items():
+                self._executor.logger.debug(f"... Registering bundle '{bundle_name}'")
                 bundler = bundle_config.bundler.initialize_component(global_options=self._config)
                 loader = bundle_config.loader.initialize_component(global_options=self._config)
                 transformers = [
@@ -59,14 +65,30 @@ class Compiler:
             self._packages.append(package)
 
     def _load_assets(self):
+        nested_tasks = []
+        task = Task(
+            start_msg="# Loading assets into the compiler ---",
+            complete_msg='',
+            fail_msg="! Failed to load assets into the compiler - exiting",
+            nested_tasks=nested_tasks
+        )
+
         for package in self._packages:
             for bundle in package.bundles.values():
-                bundle.load()
+                bundle_task = Task(
+                    start_msg=f"... Loading assets for bundle '{bundle.name}'",
+                    complete_msg='',
+                    fail_msg=f"! Failed to load assets for bundle '{bundle.name}' - exiting",
+                    callable=bundle.load
+                )
+                nested_tasks.append(bundle_task)
+
+        list(self._executor.execute(tasks=[task], parallel=False))
 
     def _transform_assets(self):
-        print(__file__)
         for package in self._packages:
             for bundle in package.bundles.values():
+                self._executor.logger.info(f"# Running transformers for package '{package.name}': bundle '{bundle.name}' ---")
                 sync_tasks = []
                 parallel_tasks = []
 
@@ -91,7 +113,9 @@ class Compiler:
 
                     parallel_tasks.append(
                         Task(
-                            name=f"Transforming (simple) '{asset.name}'",
+                            start_msg=f"... Running simple transformers on asset '{asset.name}'",
+                            complete_msg='',
+                            fail_msg=f"! Failed to execute simple transformers on asset '{asset.name}' - exiting",
                             callable=partial(
                                 Compiler._transform_asset_parallel,
                                 asset=asset,
@@ -102,7 +126,9 @@ class Compiler:
 
                     sync_tasks.append(
                         Task(
-                            name=f"Transforming (complex) '{asset.name}'",
+                            start_msg=f"... Running complex transformers on asset '{asset.name}'",
+                            complete_msg='',
+                            fail_msg=f"! Failed to execute complex transformers on asset '{asset.name}' - exiting",
                             callable=partial(
                                 Compiler._transform_asset,
                                 asset=asset,
@@ -112,15 +138,28 @@ class Compiler:
                         )
                     )
 
-                for task in self._executor.execute(sync_tasks, parallel=False):
-                    print('Ok: ' + task.name)
-
-                for task in self._executor.execute(parallel_tasks, parallel=True):
-                    print('Ok: ' + task.name)
+                list(self._executor.execute(sync_tasks, parallel=False))
+                list(self._executor.execute(parallel_tasks, parallel=True))
 
     def _package_assets(self):
+        nested_tasks = []
+        task = Task(
+            start_msg="# Packaging assets ---",
+            complete_msg='',
+            fail_msg="! Failed to package assets - exiting",
+            nested_tasks=nested_tasks
+        )
+
         for package in self._packages:
-            package.package()
+            package_task = Task(
+                start_msg=f"... Packaging & bundling assets for package '{package.name}'",
+                complete_msg='',
+                fail_msg=f"! Failed to package & bundle assets for package '{package.name}' - exiting",
+                callable=package.package
+            )
+            nested_tasks.append(package_task)
+
+        list(self._executor.execute(tasks=[task], parallel=False))
 
     @staticmethod
     def _run_analysis(analyzer_class, import_analysis, subject) -> Analyzer.Analysis:
@@ -173,18 +212,37 @@ T = TypeVar('T')
 
 
 class Task:
-    def __init__(self, name: str, callable: Callable[..., T]):
-        self._name = name
+    def __init__(self, start_msg: str, complete_msg: str, fail_msg: str, callable: Optional[Callable[..., T]] = None, nested_tasks: Optional[List[Task]] = None):
+        self._start_msg = start_msg
+        self._complete_msg = complete_msg
+        self._fail_msg = fail_msg
         self._callable = callable
         self._result = None
 
+        if nested_tasks is None:
+            nested_tasks = []
+
+        self._nested_tasks = nested_tasks
+
     @property
-    def name(self) -> str:
-        return self._name
+    def start_msg(self) -> str:
+        return self._start_msg
+
+    @property
+    def complete_msg(self) -> str:
+        return self._complete_msg
+
+    @property
+    def fail_msg(self) -> str:
+        return self._fail_msg
 
     @property
     def result(self):
         return self._result
+
+    @property
+    def nested_tasks(self) -> List[Task]:
+        return self._nested_tasks
 
     def run(self) -> Task:
         self._result = self._callable()
@@ -192,6 +250,13 @@ class Task:
 
 
 class Executor(ABC):
+    def __init__(self, logger: Logger):
+        self._logger = logger
+
+    @property
+    def logger(self) -> Logger:
+        return self._logger
+
     @abstractmethod
     def execute(self, tasks: Iterable[Task], parallel: bool) -> Iterable[Task]:
         raise NotImplemented
@@ -200,13 +265,28 @@ class Executor(ABC):
 class SynchronousExecutor(Executor):
     def execute(self, tasks: Iterable[Task], parallel: bool = False) -> Iterable[Task]:
         return map(
-            lambda x: x.run(),
+            lambda x: self._execute_task(x),
             tasks
         )
 
+    def _execute_task(self, task: Task):
+        self._logger.info(task.start_msg)
+
+        if len(task.nested_tasks) > 0:
+            return list(self.execute(task.nested_tasks, parallel=False))
+
+        try:
+            result = task.run()
+        except Exception as e:
+            self._logger.error(task.fail_msg)
+            raise e
+
+        return result
+
 
 class ConcurrentExecutor(Executor):
-    def __init__(self, sync_executor: SynchronousExecutor):
+    def __init__(self, sync_executor: SynchronousExecutor, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._sync_executor = sync_executor
         os.environ['LOKY_PICKLER'] = 'cloudpickle'
         self._executor = get_reusable_executor()
