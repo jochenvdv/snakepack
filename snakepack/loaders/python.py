@@ -241,7 +241,8 @@ class PackageLoader(Loader):
                         name=str(static_file_path),
                         target_path=static_file_path,
                         source=FileContentSource(
-                            path=path
+                            path=path,
+                            binary=True
                         )
                     )
                 )

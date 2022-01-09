@@ -120,6 +120,18 @@ class StringAssetContent(AssetContent[U]):
         return string_content
 
 
+class BinaryAssetContent(AssetContent[U]):
+    def __init__(self, binary: bytes):
+        self._binary = binary
+
+    def __str__(self) -> str:
+        return self._binary.decode('utf-8', errors='ignore')
+
+    @classmethod
+    def from_string(cls, string_content) -> BinaryAssetContent:
+        return cls(bytes(string_content))
+
+
 class AssetContentSource(ABC):
     def __init__(self, default_content_type: Optional[Type[AssetContent]] = None):
         self._default_content_type = default_content_type
@@ -142,22 +154,30 @@ class RuntimeContentSource(AssetContentSource):
 
 
 class FileContentSource(AssetContentSource):
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, path, binary=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._path = path
+        self._binary = binary
 
     @property
     def path(self) -> Path:
         return self._path
 
     def load(self) -> AssetContent:
-        with open(self._path) as f:
-            string_content = f.read()
+        if self._binary:
+            with open(self._path, 'rb') as f:
+                binary_content = f.read()
+                content = BinaryAssetContent(binary_content)
+        else:
+            with open(self._path, 'rb') as f:
+                string_content = f.read()
 
-        if self._default_content_type is not None:
-            return self._default_content_type.from_string(string_content)
+                if self._default_content_type is not None:
+                    content = self._default_content_type.from_string(string_content)
+                else:
+                    content = StringAssetContent(string_content)
 
-        return StringAssetContent(string_content)
+        return content
 
 
 class AssetContentCache:
