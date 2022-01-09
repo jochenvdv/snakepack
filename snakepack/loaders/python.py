@@ -131,7 +131,8 @@ class ImportGraphLoader(Loader):
                     name=static_file_path,
                     target_path=static_file_path,
                     source=FileContentSource(
-                        path=sub_path
+                        path=sub_path,
+                        binary=True
                     )
                 )
                 files.add(static_file)

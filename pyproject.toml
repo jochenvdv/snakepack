@@ -45,6 +45,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 python_classes = '*Test'
 norecursedirs = 'tests/acceptance/subjects/*'
+addopts = '-m "not hypothesis"'
 
 [tool.tox]
 legacy_tox_ini = """

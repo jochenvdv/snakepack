@@ -115,6 +115,9 @@ class StringAssetContent(AssetContent[U]):
     def __str__(self) -> str:
         return self._string
 
+    def __bytes__(self) -> bytes:
+        return self._string.encode('utf-8')
+
     @classmethod
     def from_string(cls, string_content) -> StringAssetContent:
         return string_content
@@ -126,6 +129,9 @@ class BinaryAssetContent(AssetContent[U]):
 
     def __str__(self) -> str:
         return self._binary.decode('utf-8', errors='ignore')
+
+    def __bytes__(self) -> bytes:
+        return self._binary
 
     @classmethod
     def from_string(cls, string_content) -> BinaryAssetContent:
@@ -169,7 +175,7 @@ class FileContentSource(AssetContentSource):
                 binary_content = f.read()
                 content = BinaryAssetContent(binary_content)
         else:
-            with open(self._path, 'rb') as f:
+            with open(self._path, 'r') as f:
                 string_content = f.read()
 
                 if self._default_content_type is not None:

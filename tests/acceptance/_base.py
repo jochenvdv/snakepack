@@ -144,7 +144,7 @@ class BaseAcceptanceTest:
                 pytest.fail('Snakepack round-trip invocation failed')
         else:
             import snakepack.app
-            result = cli_runner.invoke(snakepack.app.snakepack, [f'--config-file={config_path}'])
+            result = cli_runner.invoke(snakepack.app.snakepack, [f'--config-file={config_path}', '-vv'])
             print(result.output)
             assert result.exit_code == 0, 'Snakepack invocation failed'
 
@@ -224,6 +224,16 @@ class BaseAcceptanceTest:
                     excludes=[
                         'typing_extensions',
                         'pkg_resources'
+                    ]
+                )
+            )
+
+        if transformer_name == 'remove_assertions':
+            return ComponentConfig(
+                name=transformer_name,
+                options=RenameIdentifiersTransformer.Options(
+                    excludes=[
+                        'snakepack.config.options',
                     ]
                 )
             )
