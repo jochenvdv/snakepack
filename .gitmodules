@@ -10,3 +10,6 @@
 [submodule "tests/acceptance/subjects/requests"]
 	path = tests/acceptance/subjects/requests
 	url = https://github.com/psf/requests
+[submodule "tests/acceptance/subjects/fastapi"]
+	path = tests/acceptance/subjects/fastapi
+	url = https://github.com/tiangolo/fastapi
