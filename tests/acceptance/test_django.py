@@ -9,7 +9,7 @@ from tests.acceptance._base import BaseAcceptanceTest, per_transformer, ALL_TRAN
 class DjangoAcceptanceTest(BaseAcceptanceTest):
     _SUBJECT_NAME = 'django'
     _SOURCEDIR = Path(__file__).resolve().parent / 'subjects' / _SUBJECT_NAME
-    _LIBRARY_PACKAGES = ['django', 'tests']
+    _LIBRARY_PACKAGES = ['django']
     _PRETEST_CMD = f'{{venv_path}}/pip install -r {str(_SOURCEDIR)}/tests/requirements/py3.txt'
     _TEST_CMD = ' {venv_path}/pytest -p no:hypothesis-6.32.1 {dist_path}/runtests.py'
     _EXTRA_TEST_FILES = ['runtests.py']

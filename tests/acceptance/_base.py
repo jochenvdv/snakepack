@@ -134,7 +134,7 @@ class BaseAcceptanceTest:
 
             try:
                 result = subprocess.check_output(
-                    args=f"PYTHONPATH={config.source_base_path}:$PYTHONPATH python {config.source_base_path / 'snakepack/__main__.py'} --config-file={config_path}",
+                    args=f"PYTHONPATH={config.source_base_path}:$PYTHONPATH python {config.source_base_path / 'snakepack/__main__.py -vv'} --config-file={config_path}",
                     shell=True,
                     stderr=subprocess.STDOUT
                 )
