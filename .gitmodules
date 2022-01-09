@@ -1,3 +1,9 @@
 [submodule "tests/acceptance/subjects/pydantic"]
 	path = tests/acceptance/subjects/pydantic
 	url = https://github.com/samuelcolvin/pydantic
+[submodule "tests/acceptance/subjects/django"]
+	path = tests/acceptance/subjects/django
+	url = https://github.com/django/django
+[submodule "tests/acceptance/subjects/sqlalchemy"]
+	path = tests/acceptance/subjects/sqlalchemy
+	url = https://github.com/sqlalchemy/sqlalchemy

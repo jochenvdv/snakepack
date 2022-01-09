@@ -8,7 +8,7 @@ from operator import getitem
 
 from pathlib import Path
 from site import getsitepackages
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 
 from modulegraph.find_modules import find_modules, parse_mf_results
 from modulegraph.modulegraph import ModuleGraph, Package, Node
@@ -197,7 +197,12 @@ class PackageLoader(Loader):
 
     def load(self) -> PythonPackage:
         pkg_name = self._options.pkg_name.module_path[0]
-        pkg_path = self._global_options.source_base_path / pkg_name
+        pkg_path = self._global_options.source_base_path
+
+        if self._options.pkg_base_path is not None:
+            pkg_path = pkg_path / self._options.pkg_base_path
+
+        pkg_path = pkg_path / pkg_name
 
         python_pkg = self._load_package(pkg_name, pkg_path)
         analyzer = ImportGraphAnalyzer()
@@ -245,6 +250,7 @@ class PackageLoader(Loader):
 
     class Options(Options):
         pkg_name: FullyQualifiedPythonName
+        pkg_base_path: Optional[Path] = None
         target_version: str = '3.9'
         load_data_files: bool = True
 

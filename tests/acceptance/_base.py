@@ -33,6 +33,7 @@ class BaseAcceptanceTest:
     _APPLICATION_ENTRY_POINT = NotImplemented
     _EXTRA_INCLUDES = NotImplemented
     _LIBRARY_PACKAGES = NotImplemented
+    _PKG_BASE_PATH = None
     _TEST_CMD = NotImplemented
     _EXTRA_TEST_FILES = NotImplemented
     _PRETEST_CMD = NotImplemented
@@ -73,6 +74,7 @@ class BaseAcceptanceTest:
                     name='package',
                     options=PackageLoader.Options(
                         pkg_name=FullyQualifiedPythonName(library_pkg),
+                        pkg_base_path=self._PKG_BASE_PATH
                     )
                 ),
                 transformers=[

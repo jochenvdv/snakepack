@@ -1,7 +1,7 @@
 from typing import Optional, Union, Dict, Tuple, Mapping, Type
 
 from boltons.iterutils import first, flatten
-from libcst import CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
+from libcst import IndentedBlock, CSTTransformer, Comment, RemovalSentinel, SimpleStatementLine, BaseStatement, FlattenSentinel, \
     MaybeSentinel, ClassDef, Name, CSTNode, Expr, BaseString, SimpleString, BaseExpression, Module, Assign, \
     AssignTarget, SimpleWhitespace, ConcatenatedString, ImportFrom
 from libcst.metadata import ParentNodeProvider, ScopeProvider
