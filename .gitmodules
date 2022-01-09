@@ -7,3 +7,6 @@
 [submodule "tests/acceptance/subjects/sqlalchemy"]
 	path = tests/acceptance/subjects/sqlalchemy
 	url = https://github.com/sqlalchemy/sqlalchemy
+[submodule "tests/acceptance/subjects/requests"]
+	path = tests/acceptance/subjects/requests
+	url = https://github.com/psf/requests
