@@ -1,6 +1,6 @@
 # Snakepack
 
-Snakepack is a code bundler and minifier for Python.
+Snakepack is a code bundler and minifier for Python. Read the [documentation](docs/index.md).
 
 ## Getting started
 
@@ -28,7 +28,7 @@ You can run Snakepack from the command line:
 snakepack
 ````
 
-Refer to the Quickstart in the documentation for further instructions on how to setup Snakepack for your project.
+Refer to the [Quickstart](docs/quickstart.md) in the [documentation](docs/index.md) for further instructions on how to setup Snakepack for your project.
 
 ## Development
 
