@@ -9,7 +9,7 @@ from tests.acceptance._base import BaseAcceptanceTest, per_transformer, ALL_TRAN
 class PydanticAcceptanceTest(BaseAcceptanceTest):
     _SUBJECT_NAME = 'pydantic'
     _SOURCEDIR = Path(__file__).resolve().parent / 'subjects' / _SUBJECT_NAME
-    _LIBRARY_PACKAGES = ['pydantic', 'tests']
+    _LIBRARY_PACKAGES = ['pydantic']
     _PRETEST_CMD = f'{{venv_path}}/pip install -r {str(_SOURCEDIR)}/tests/requirements-testing.txt'
     _TEST_CMD = ' {venv_path}/pytest -p no:hypothesis-6.32.1 {dist_path}/tests'
     _EXTRA_TEST_FILES = ['tests/conftest.py']
